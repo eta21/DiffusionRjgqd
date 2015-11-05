@@ -1,13 +1,19 @@
 globalVariables('priors')
-BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates/2),25000),exclude=NULL,plot.chain=T,RK.order=4,rtf=runif(2),wrt=F,Tag=NA,Dtype='Normal',Jdist='Normal',Jtype=1,recycle=FALSE,adapt=0)
+BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates/2),25000),exclude=NULL,plot.chain=TRUE,RK.order=4,wrt=FALSE,Tag=NA,Dtype='Saddlepoint',Jdist='MVNormal',Jtype='Add',adapt=0,print.output=TRUE)
 {
+  Mstar3 =1
+  recycle=FALSE
+  rtf=runif(2)
   solver   =function(Xs, Xt, theta, N , delt , N2, tt  , P , alpha, lower , upper, tro  ){}
   rm(list =c('solver'))
 
-   theta = theta+runif(length(theta),0.001,0.002)*sign(theta)
-   T.seq=time
-  Dtypes =c('Saddlepoint','Edgeworth','Normal')
+  theta = theta+runif(length(theta),0.001,0.002)*sign(theta)
+  T.seq=time
+  Dtypes =c('Saddlepoint','Normal')
   Dindex = which(Dtypes==Dtype)
+
+  JDtypes=c('Normal','MVNormal')
+  JDindex = which(JDtypes==Jdist)
 
   # A power function used to solve the syntax gap issue between R and C++
   pow=function(x,p)
@@ -41,7 +47,7 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
     ,'15. Input: length(alpha)!=1.\n'
     ,'16. Input: length(Trunc)!=1.\n'
     ,'17. Input: length(RK.order)!=1.\n'
-    ,'18. Density: Dtype has to be one of Saddlepoint, Edgeworth or Normal.\n'
+    ,'18. Density: Dtype has to be one of Saddlepoint or Normal.\n'
     ,'19. Density: Range [lower,upper] must be strictly positive for Dtype Gamma or InvGamma.\n'
     ,'20. Density: Dtype cannot be Beta for observations not in (0,1).\n'
     ,'21. Density: Argument {upper} must be > {lower}.\n'
@@ -62,20 +68,29 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
     ,'36. Input: NAs not allowed.\n'
     ,'37. Input: length(Dtype)!=1.\n'
     ,'38. Input: NAs not allowed.\n'
+    ,'39. Input: {Jdist} has to be of type "MVNormal".\n'
+    ,'40. Input: {Jtype} has to be of type "Add" or "Mult".\n'
   )
 
-   warntrue = rep(F,40)
+   warntrue = rep(F,50)
     check.thetas = function(theta,tt)
   {
     t=tt
     theta = theta+runif(length(theta),0.001,0.002)*sign(theta)
+    #namess=c('a00','a10','a20','a01','a02','a11',
+    #         'b00','b10','b20','b01','b02','b11',
+    #         'c00','c10','c20','c01','c02','c11',
+    #         'd00','d10','d20','d01','d02','d11',
+    #         'e00','e10','e20','e01','e02','e11',
+    #         'f00','f10','f20','f01','f02','f11',
+    #         'Lam00','Lamy0','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Lam10','Lamx2','Lamy1','Lamy2','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
     namess=c('a00','a10','a20','a01','a02','a11',
              'b00','b10','b20','b01','b02','b11',
              'c00','c10','c20','c01','c02','c11',
              'd00','d10','d20','d01','d02','d11',
              'e00','e10','e20','e01','e02','e11',
              'f00','f10','f20','f01','f02','f11',
-             'Lam1','Lam2','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Nu1x','Nu2x','Nu1y','Nu2y','MU1','MU2','SIG11','SIG12','SIG22')
+             'Lam00','Lam10','Lam01','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
     func.list=rep(0,length(namess))
     obs=objects(pos=1)
     for(i in 1:length(namess))
@@ -88,7 +103,7 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
       for(j in 1:length(theta))
       {
         dresult1=eval(body(namess[i]))
-        theta[j] = theta[j]+runif(1,-0.01,0.01)
+        theta[j] = theta[j]+runif(1,0.1,1)
         dresult2=eval(body(namess[i]))
         dff = abs(dresult1-dresult2)
         if(any(round(dff,6)!=0)){pers.represented[j]=pers.represented[j]+1}
@@ -104,7 +119,7 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
              'd00','d10','d20','d01','d02','d11',
              'e00','e10','e20','e01','e02','e11',
              'f00','f10','f20','f01','f02','f11',
-             'Lam1','Lam2','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Nu1x','Nu2x','Nu1y','Nu2y','MU1','MU2','SIG11','SIG12','SIG22')
+             'Lam00','Lam10','Lam01','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
     func.list=rep(0,length(namess))
     obs=objects(pos=1)
     for(i in 1:length(namess))
@@ -143,12 +158,7 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
    # Check input length:
    if(dim(X)[1]<10)                                              {warntrue[9]=T}
    if(length(time)<10)                                          {warntrue[10]=T}
-   #if(length(lower)>1)                                          {warntrue[11]=T}
-   #if(length(upper)>1)                                          {warntrue[12]=T}
-   #if(length(P)!=1)                                             {warntrue[13]=T}
    if(length(mesh)!=1)                                        {warntrue[14]=T}
-   #if(length(alpha)!=1)                                         {warntrue[15]=T}
-   #if(length(Trunc)!=2)                                         {warntrue[16]=T}
    if(length(RK.order)!=1)                                      {warntrue[17]=T}
    if(length(updates)!=1)                                     {warntrue[33]=T}
    if(length(burns)!=1)                                         {warntrue[34]=T}
@@ -157,14 +167,7 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
 
    # Check density approx parameters:
    if(sum(Dindex)==0)                                          {warntrue[18] =T}
-   #if(!warntrue[18])
-   #{
-   # if((Dindex==3)|(Dindex==4)){if(lower[1]<=0)                {warntrue[19] =T}}
-   # if(Dindex==5){if(any(X<=0)|any(X>=1))                      {warntrue[20] =T}}
-   #}
-   #if(!any(warntrue[c(11,12)])){if(upper<=lower)                {warntrue[21] =T}}
-   #if(!warntrue[13]){if(P<10)                                   {warntrue[22] =T}}
-   #if(!warntrue[16]){if(Trunc[2]>Trunc[1])                      {warntrue[23] =T}}
+
 
    #  Miscelaneous checks:
    excl=0
@@ -178,9 +181,10 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
    if(dim(X)[1]!=length(time))                                  {warntrue[28]=T}
    if(!any(warntrue[c(33,34)])){if(burns>updates)             {warntrue[29]=T}}
    if(!warntrue[33]){if(updates<2)                            {warntrue[30]=T}}
-   if(length(theta)!=length(sds))                               {warntrue[31]=T}
-   if(any(is.na(X))||any(is.na(time)))                          {warntrue[36]=T}
-
+   if(length(theta)!=length(sds))                             {warntrue[31]=T}
+   if(any(is.na(X))||any(is.na(time)))                        {warntrue[36]=T}
+   if(sum(JDindex)==0)                                        {warntrue[39] =TRUE}
+   if((Jtype!='Add')&&(Jtype!='Mult'))                        {warntrue[40] =TRUE}
    # Print output:
    if(any(warntrue))
    {
@@ -192,10 +196,6 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
       prnt = paste0(prnt,b2)
       stop(prnt)
    }
-
-
-
-
 
     ############################################################################
     ############################################################################
@@ -300,52 +300,7 @@ BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates
 
     tro=c(5,8,8,8,14)[which(c(state1,state3.0,state3.1,state3.2,state4)==T)]
     tro = 14
-if(tro==5)
-{
-    txtA='
-    #include <RcppArmadillo.h>
-    #include <math.h>
-    #include <Rcpp.h>
-    #define pi           3.14159265358979323846  /* pi */
-    using namespace arma;
-    using namespace Rcpp;
-    using namespace R;
 
-    // [[Rcpp::depends("RcppArmadillo")]]
-    // [[Rcpp::export]]
-    vec prod(vec a,vec b)
-    {
-        return(a%b);
-    }
-    mat f(mat a,vec theta,vec t,int N2)
-    {
-        mat atemp(N2,5);'
-
-secmom = 3
-}
-if(tro==8)
-{
-    txtA='
-    #include <RcppArmadillo.h>
-    #include <math.h>
-    #include <Rcpp.h>
-    #define pi           3.14159265358979323846  /* pi */
-    using namespace arma;
-    using namespace Rcpp;
-    using namespace R;
-
-    // [[Rcpp::depends("RcppArmadillo")]]
-    // [[Rcpp::export]]
-    vec prod(vec a,vec b)
-    {
-        return(a%b);
-    }
-    mat f(mat a,vec theta,vec t,int N2)
-    {
-        mat atemp(N2,8);'
-
-secmom = 5
-}
 
 if(tro==14)
 {
@@ -367,7 +322,7 @@ if(tro==14)
     mat f(mat a,vec theta,vec t,int N2)
     {
         mat atemp(N2,34);'
-secmom = 5
+        secmom = 5
 }
 
 if(RK.order==4)
@@ -440,9 +395,10 @@ List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N, mat delt,int N2,vec d,
     mat fx6(N2,tro);
     double whch =0;
     x0.fill(0);
-    for (int i = 1; i <= 15; i++)
+    for (int i = 1; i <= 14; i++)
     {
      x0.col(i-1)=pow(Xs,seq1[i-1])%pow(Ys,seq2[i-1]);
+     x0.col(i-1+14)=pow(Xs,seq1[i-1])%pow(Ys,seq2[i-1]);
     }
     for (int i = 1; i < N; i++)
    {
@@ -473,7 +429,7 @@ txtB= '
 }
 
 // [[Rcpp::export]]
-List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N,double delt,int N2,vec tt,mat starts,int tro,int secmom)
+List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N,double delt,int N2,vec tt,mat starts,int tro,int secmom,vec seq1,vec seq2)
 {
   mat resss(N2,3);
   mat fx0(N2,tro);
@@ -511,8 +467,14 @@ List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N,double delt,int N2,vec 
   mat x15(N2,tro);
   mat x16(N2,tro);
   x0.fill(0);
-  x0.col(0)=Xs;
-  x0.col(secmom-1)=Ys;
+  double whch =0;
+
+  for (int i = 1; i <= 14; i++)
+  {
+   x0.col(i-1)=pow(Xs,seq1[i-1])%pow(Ys,seq2[i-1]);
+   x0.col(i-1+14)=pow(Xs,seq1[i-1])%pow(Ys,seq2[i-1]);
+  }
+
   vec d=tt;
   for (int i = 1; i < N; i++)
 {
@@ -580,7 +542,7 @@ txtB= '
 }
 
   // [[Rcpp::export]]
-List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N, mat delt,int N2,vec d,mat starts,int tro,int secmom)
+List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N,double delt,int N2,vec tt,mat starts,int tro,int secmom,vec seq1,vec seq2)
 {
   mat resss(N2,3);
   mat fx0(N2,tro);
@@ -617,9 +579,14 @@ List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N, mat delt,int N2,vec d,
   mat x14(N2,tro);
   mat x15(N2,tro);
   mat x16(N2,tro);
+  double whch =0;
   x0.fill(0);
-  x0.col(0)=Xs;
-  x0.col(secmom-1)=Ys;
+  for (int i = 1; i <= 14; i++)
+  {
+     x0.col(i-1)=pow(Xs,seq1[i-1])%pow(Ys,seq2[i-1]);
+     x0.col(i-1+14)=pow(Xs,seq1[i-1])%pow(Ys,seq2[i-1]);
+  }
+
   for (int i = 1; i < N; i++)
 {
   fx0=f(x0,theta,d,N2);
@@ -679,135 +646,12 @@ List  solver(vec Xs,vec Ys,vec Xt,vec Yt,vec theta,int N, mat delt,int N2,vec d,
   }
 }
 
-if(state1)
-{
-txtC=
-'
-  vec det=(x0.col(1)%x0.col(3)-x0.col(4)%x0.col(4));
-  resss.col(0)=-log(2*3.141592653589793)-0.5*log(abs(det))-0.5*((Xt-x0.col(0))%(Xt-x0.col(0))%x0.col(3)/det-(Xt-x0.col(0))%(Yt-x0.col(2))%x0.col(4)/det-(Xt-x0.col(0))%(Yt-x0.col(2))%x0.col(4)/det+(Yt-x0.col(2))%(Yt-x0.col(2))%x0.col(1)/det);
-  List ret;
-  ret["like"] = resss;
-  ret["max"] = whch;
-  return(ret);
-}'
-}
-if(state3.0)
-{
-txtC=
-'
-  vec p=(1.0/3.0) *(3*(x0.col(3)/6.0)%x0.col(1) - pow(x0.col(2)/2.0,2))/pow(x0.col(3)/6.0,2);
-  vec q=(1.0/27.0)*(27*pow(x0.col(3)/6.0,2)%(x0.col(0)-Xt) - 9*(x0.col(3)/6.0)%(x0.col(2)/2.0)%x0.col(1) + 2*pow(x0.col(2)/2.0,3))/pow(x0.col(3)/6.0,3);
-  vec chk=pow(q,2)/4.0 + pow(p,3)/27.0;
-  vec th=-(x0.col(2)/2.0)/(3*(x0.col(3)/6.0))+pow(-q/2.0+sqrt(chk),(1.0/3.0))-pow(q/2.0+sqrt(chk),(1.0/3.0));
 
-  vec K =x0.col(0)%th+(x0.col(1)%th%th)/2.0+(x0.col(2)%th%th%th)/6.0 +(x0.col(3)%th%th%th%th)/24.0;
-  vec K1=x0.col(0)   +(x0.col(1)%th)       +(x0.col(2)%th%th)/2.0    +(x0.col(3)%th%th%th)/6.0;
-  vec K2=x0.col(1)   +(x0.col(2)%th)       +(x0.col(3)%th%th)/2.0;
-  vec val=-0.5*log(2*3.141592653589793*K2)+(K-th%K1);
-
-  p=(1.0/3.0) *(3*(x0.col(7)/6.0)%x0.col(5) - pow(x0.col(6)/2.0,2))/pow(x0.col(7)/6.0,2);
-  q=(1.0/27.0)*(27*pow(x0.col(7)/6.0,2)%(x0.col(4)-Yt) - 9*(x0.col(7)/6.0)%(x0.col(6)/2.0)%x0.col(5) + 2*pow(x0.col(6)/2.0,3))/pow(x0.col(7)/6.0,3);
-  chk=pow(q,2)/4.0 + pow(p,3)/27.0;
-  th=-(x0.col(6)/2.0)/(3*(x0.col(7)/6.0))+pow(-q/2.0+sqrt(chk),(1.0/3.0))-pow(q/2.0+sqrt(chk),(1.0/3.0));
-
-  K =x0.col(4)%th+(x0.col(5)%th%th)/2.0+(x0.col(6)%th%th%th)/6.0 +(x0.col(7)%th%th%th%th)/24.0;
-  K1=x0.col(4)   +(x0.col(5)%th)       +(x0.col(6)%th%th)/2.0    +(x0.col(7)%th%th%th)/6.0;
-  K2=x0.col(5)   +(x0.col(6)%th)       +(x0.col(7)%th%th)/2.0;
-  val=val-0.5*log(2*3.141592653589793*K2)+(K-th%K1);
-  resss.col(0)=val;
-  List ret;
-  ret["like"] = resss;
-  ret["max"] = whch;
-  return(ret);
-}'
-if(Dtype=='Normal')
-{
-txtC=
- '
-  vec val=   -0.5*log(2*3.141592653589793*x0.col(5))-0.5*pow(Yt-x0.col(4),2)/x0.col(5);
-  val=val-0.5*log(2*3.141592653589793*x0.col(1))-0.5*pow(Xt-x0.col(0),2)/x0.col(1);
-  resss.col(0)=val;
-  List ret;
-  ret["like"] = resss;
-  ret["max"] = whch;
-  return(ret);
-}'
-}
-}
-if(state3.1)
-{
-txtC=
-'
-vec p=(1.0/3.0) *(3*(x0.col(7)/6.0)%x0.col(5) - pow(x0.col(6)/2.0,2))/pow(x0.col(7)/6.0,2);
-vec q=(1.0/27.0)*(27*pow(x0.col(7)/6.0,2)%(x0.col(4)-Yt) - 9*(x0.col(7)/6.0)%(x0.col(6)/2.0)%x0.col(5) + 2*pow(x0.col(6)/2.0,3))/pow(x0.col(7)/6.0,3);
-vec chk=pow(q,2)/4.0 + pow(p,3)/27.0;
-vec th=-(x0.col(6)/2.0)/(3*(x0.col(7)/6.0))+pow(-q/2.0+sqrt(chk),(1.0/3.0))-pow(q/2.0+sqrt(chk),(1.0/3.0));
-
-vec K =x0.col(4)%th+(x0.col(5)%th%th)/2.0+(x0.col(6)%th%th%th)/6.0 +(x0.col(7)%th%th%th%th)/24.0;
-vec K1=x0.col(4)   +(x0.col(5)%th)       +(x0.col(6)%th%th)/2.0    +(x0.col(7)%th%th%th)/6.0;
-vec K2=x0.col(5)   +(x0.col(6)%th)       +(x0.col(7)%th%th)/2.0;
-vec val=-0.5*log(2*3.141592653589793*K2)+(K-th%K1);
-
-val=val-0.5*log(2*3.141592653589793*x0.col(1))-0.5*pow(Xt-x0.col(0),2)/x0.col(1);
-resss.col(0)=val;
-  List ret;
-  ret["like"] = resss;
-  ret["max"] = whch;
-  return(ret);
-  }'
-if(Dtype=='Normal')
-{
-
-    txtC='
-  vec val=   -0.5*log(2*3.141592653589793*x0.col(5))-0.5*pow(Yt-x0.col(4),2)/x0.col(5);
-  val=val-0.5*log(2*3.141592653589793*x0.col(1))-0.5*pow(Xt-x0.col(0),2)/x0.col(1);
-  resss.col(0)=val;
-  List ret;
-  ret["like"] = resss;
-  ret["max"] = whch;
-  return(ret);
-}'
-}
-}
-if(state3.2)
-{
-txtC='
-vec p=(1.0/3.0) *(3*(x0.col(3)/6.0)%x0.col(1) - pow(x0.col(2)/2.0,2))/pow(x0.col(3)/6.0,2);
-vec q=(1.0/27.0)*(27*pow(x0.col(3)/6.0,2)%(x0.col(0)-Xt) - 9*(x0.col(3)/6.0)%(x0.col(2)/2.0)%x0.col(1) + 2*pow(x0.col(2)/2.0,3))/pow(x0.col(3)/6.0,3);
-vec chk=pow(q,2)/4.0 + pow(p,3)/27.0;
-vec th=-(x0.col(2)/2.0)/(3*(x0.col(3)/6.0))+pow(-q/2.0+sqrt(chk),(1.0/3.0))-pow(q/2.0+sqrt(chk),(1.0/3.0));
-
-vec K =x0.col(0)%th+(x0.col(1)%th%th)/2.0+(x0.col(2)%th%th%th)/6.0 +(x0.col(3)%th%th%th%th)/24.0;
-vec K1=x0.col(0)   +(x0.col(1)%th)       +(x0.col(2)%th%th)/2.0    +(x0.col(3)%th%th%th)/6.0;
-vec K2=x0.col(1)   +(x0.col(2)%th)       +(x0.col(3)%th%th)/2.0;
-vec val=-0.5*log(2*3.141592653589793*K2)+(K-th%K1);
-
-val=val-0.5*log(2*3.141592653589793*x0.col(5))-(0.5*pow(Yt-x0.col(4),2)/x0.col(5));
-resss.col(0)=val;
-  List ret;
-  ret["like"] = resss;
-  ret["max"] = whch;
-  return(ret);
-}'
-if(Dtype=='Normal')
-{
-
-    txtC='
-  vec val=   -0.5*log(2*3.141592653589793*x0.col(5))-0.5*pow(Yt-x0.col(4),2)/x0.col(5);
-  val=val-0.5*log(2*3.141592653589793*x0.col(1))-0.5*pow(Xt-x0.col(0),2)/x0.col(1);
-  resss.col(0)=val;
-  List ret;
-  ret["like"] = resss;
-  ret["max"] = whch;
-  return(ret);
-}'
-}
-}
 if(state4)
 {
-if(Dtype=='Saddlepoint')
-{
-txtC='
+ if(Dtype=='Saddlepoint')
+ {
+ txtC='
  vec probs=exp(-x0.col(28)-x0.col(29)-x0.col(30)-x0.col(31)-x0.col(32)-x0.col(33));
 
    vec m00 = (1+0*x0.col(0));
@@ -875,72 +719,72 @@ txtC='
 
 
   vec a(N2);
-vec b(N2);
-vec abser(N2);
-abser=0.1+abser;
-a.ones();
-b.ones();
-vec det=(k10%k01-k11%k11);
-a=-(Xt-k10)%k20/det+(Yt-k01)%k11/det;
-b=+(Xt-k10)%k11/det-(Yt-k01)%k02/det;
-vec gg(N2);
-vec hh(N2);
-vec gg1(N2);
-vec hh1(N2);
-vec gg2(N2);
-vec hh2(N2);
-vec ar(N2);
-vec br(N2);
-vec anew(N2);
-vec bnew(N2);
-int ind=0;
-while((max(abser)>0.001)&&(ind<1500))
-{
-gg=k10+k20%a+(1.0/2.0)*k30%a%a+(1.0/6.0)*k40%a%a%a +k11%b +(1.0/2.0)*k12%b%b+k21%a%b+(1.0/6.0)*b%b%b%k13+(1.0/2.0)*a%a%b%k31+(1.0/2.0)*a%b%b%k22-Xt;
-hh=k01+k02%b+(1.0/2.0)*k03%b%b+(1.0/6.0)*k04%b%b%b +k11%a +k12%a%b+(1.0/2.0)*k21%a%a+(1.0/2.0)*a%b%b%k13+(1.0/6.0)*a%a%a%k31+(1.0/2.0)*a%a%b%k22-Yt;
+  vec b(N2);
+  vec abser(N2);
+  abser=0.1+abser;
+  a.ones();
+  b.ones();
+  vec det=(k10%k01-k11%k11);
+  a=-(Xt-k10)%k20/det+(Yt-k01)%k11/det;
+  b=+(Xt-k10)%k11/det-(Yt-k01)%k02/det;
+  vec gg(N2);
+  vec hh(N2);
+  vec gg1(N2);
+  vec hh1(N2);
+  vec gg2(N2);
+  vec hh2(N2);
+  vec ar(N2);
+  vec br(N2);
+  vec anew(N2);
+  vec bnew(N2);
+  int ind=0;
+  while((max(abser)>0.001)&&(ind<1500))
+  {
+  gg=k10+k20%a+(1.0/2.0)*k30%a%a+(1.0/6.0)*k40%a%a%a +k11%b +(1.0/2.0)*k12%b%b+k21%a%b+(1.0/6.0)*b%b%b%k13+(1.0/2.0)*a%a%b%k31+(1.0/2.0)*a%b%b%k22-Xt;
+  hh=k01+k02%b+(1.0/2.0)*k03%b%b+(1.0/6.0)*k04%b%b%b +k11%a +k12%a%b+(1.0/2.0)*k21%a%a+(1.0/2.0)*a%b%b%k13+(1.0/6.0)*a%a%a%k31+(1.0/2.0)*a%a%b%k22-Yt;
 
-gg1=k20+k30%a+(1.0/2.0)*k40%a%a+k21%b+a%b%k31+(1.0/2.0)*b%b%k22;
-gg2=k11 +k12%b+k21%a+(1.0/2.0)*b%b%k13+(1.0/2.0)*a%a%k31+a%b%k22;
+  gg1=k20+k30%a+(1.0/2.0)*k40%a%a+k21%b+a%b%k31+(1.0/2.0)*b%b%k22;
+  gg2=k11 +k12%b+k21%a+(1.0/2.0)*b%b%k13+(1.0/2.0)*a%a%k31+a%b%k22;
 
-hh1=k11 +k12%b+k21%a+(1.0/2.0)*b%b%k13+(1.0/2.0)*a%a%k31+a%b%k22;
-hh2=k02+k03%b+(1.0/2.0)*k04%b%b +k12%a+a%b%k13+(1.0/2.0)*a%a%k22;
+  hh1=k11 +k12%b+k21%a+(1.0/2.0)*b%b%k13+(1.0/2.0)*a%a%k31+a%b%k22;
+  hh2=k02+k03%b+(1.0/2.0)*k04%b%b +k12%a+a%b%k13+(1.0/2.0)*a%a%k22;
 
-anew  =a+(hh%gg2-gg%hh2)/(gg1%hh2-gg2%hh1);
-bnew  =b-(hh%gg1-gg%hh1)/(gg1%hh2-gg2%hh1);
-abser =(pow(anew-a,2)+pow(bnew-b,2));
-a=anew;
-b=bnew;
-ind=ind+1;
-}
+  anew  =a+(hh%gg2-gg%hh2)/(gg1%hh2-gg2%hh1);
+  bnew  =b-(hh%gg1-gg%hh1)/(gg1%hh2-gg2%hh1);
+  abser =(pow(anew-a,2)+pow(bnew-b,2));
+  a=anew;
+  b=bnew;
+  ind=ind+1;
+  }
 
-vec dens2=-log(2*3.141592653589793)-0.5*log(gg1%hh2-gg2%hh1)+(k10%a+k01%b+(1.0/2.0)*k20%a%a+(1.0/2.0)*k02%b%b+(1.0/6.0)*k30%a%a%a+(1.0/6.0)*k03%b%b%b+(1.0/24.0)*k40%a%a%a%a+(1.0/24.0)*k04%b%b%b%b+k11%a%b+(1.0/2.0)*k12%a%b%b+(1.0/2.0)*k21%a%a%b+(1.0/6.0)*a%b%b%b%k13+(1.0/6.0)*a%a%a%b%k31+(1.0/4.0)*a%a%b%b%k22-a%Xt-b%Yt);
+  vec dens2=-log(2*3.141592653589793)-0.5*log(gg1%hh2-gg2%hh1)+(k10%a+k01%b+(1.0/2.0)*k20%a%a+(1.0/2.0)*k02%b%b+(1.0/6.0)*k30%a%a%a+(1.0/6.0)*k03%b%b%b+(1.0/24.0)*k40%a%a%a%a+(1.0/24.0)*k04%b%b%b%b+k11%a%b+(1.0/2.0)*k12%a%b%b+(1.0/2.0)*k21%a%a%b+(1.0/6.0)*a%b%b%b%k13+(1.0/6.0)*a%a%a%b%k31+(1.0/4.0)*a%a%b%b%k22-a%Xt-b%Yt);
 
-abser=0.1+0*abser;
-a.ones();
-b.ones();
-det=(kk10%kk01-kk11%kk11);
-a=-(Xt-kk10)%kk20/det+(Yt-kk01)%kk11/det;
-b=+(Xt-kk10)%kk11/det-(Yt-kk01)%kk02/det;
-ind=0;
-while((max(abser)>0.001)&&(ind<1500))
-{
-gg=kk10+kk20%a+(1.0/2.0)*kk30%a%a+(1.0/6.0)*kk40%a%a%a +kk11%b +(1.0/2.0)*kk12%b%b+kk21%a%b+(1.0/6.0)*b%b%b%kk13+(1.0/2.0)*a%a%b%kk31+(1.0/2.0)*a%b%b%kk22-Xt;
-hh=kk01+kk02%b+(1.0/2.0)*kk03%b%b+(1.0/6.0)*kk04%b%b%b +kk11%a +kk12%a%b+(1.0/2.0)*kk21%a%a+(1.0/2.0)*a%b%b%kk13+(1.0/6.0)*a%a%a%kk31+(1.0/2.0)*a%a%b%kk22-Yt;
+  abser=0.1+0*abser;
+  a.ones();
+  b.ones();
+  det=(kk10%kk01-kk11%kk11);
+  a=-(Xt-kk10)%kk20/det+(Yt-kk01)%kk11/det;
+  b=+(Xt-kk10)%kk11/det-(Yt-kk01)%kk02/det;
+  ind=0;
+  while((max(abser)>0.001)&&(ind<1500))
+  {
+  gg=kk10+kk20%a+(1.0/2.0)*kk30%a%a+(1.0/6.0)*kk40%a%a%a +kk11%b +(1.0/2.0)*kk12%b%b+kk21%a%b+(1.0/6.0)*b%b%b%kk13+(1.0/2.0)*a%a%b%kk31+(1.0/2.0)*a%b%b%kk22-Xt;
+  hh=kk01+kk02%b+(1.0/2.0)*kk03%b%b+(1.0/6.0)*kk04%b%b%b +kk11%a +kk12%a%b+(1.0/2.0)*kk21%a%a+(1.0/2.0)*a%b%b%kk13+(1.0/6.0)*a%a%a%kk31+(1.0/2.0)*a%a%b%kk22-Yt;
 
-gg1=kk20+kk30%a+(1.0/2.0)*kk40%a%a+kk21%b+a%b%kk31+(1.0/2.0)*b%b%kk22;
-gg2=kk11 +kk12%b+kk21%a+(1.0/2.0)*b%b%kk13+(1.0/2.0)*a%a%kk31+a%b%kk22;
+  gg1=kk20+kk30%a+(1.0/2.0)*kk40%a%a+kk21%b+a%b%kk31+(1.0/2.0)*b%b%kk22;
+  gg2=kk11 +kk12%b+kk21%a+(1.0/2.0)*b%b%kk13+(1.0/2.0)*a%a%kk31+a%b%kk22;
 
-hh1=kk11 +kk12%b+kk21%a+(1.0/2.0)*b%b%kk13+(1.0/2.0)*a%a%kk31+a%b%kk22;
-hh2=kk02+kk03%b+(1.0/2.0)*kk04%b%b +kk12%a+a%b%kk13+(1.0/2.0)*a%a%kk22;
+  hh1=kk11 +kk12%b+kk21%a+(1.0/2.0)*b%b%kk13+(1.0/2.0)*a%a%kk31+a%b%kk22;
+  hh2=kk02+kk03%b+(1.0/2.0)*kk04%b%b +kk12%a+a%b%kk13+(1.0/2.0)*a%a%kk22;
 
-anew  =a+(hh%gg2-gg%hh2)/(gg1%hh2-gg2%hh1);
-bnew  =b-(hh%gg1-gg%hh1)/(gg1%hh2-gg2%hh1);
-abser =(pow(anew-a,2)+pow(bnew-b,2));
-a=anew;
-b=bnew;
-ind=ind+1;
-}
-vec dens1=-log(2*3.141592653589793)-0.5*log(gg1%hh2-gg2%hh1)+(kk10%a+kk01%b+(1.0/2.0)*kk20%a%a+(1.0/2.0)*kk02%b%b+(1.0/6.0)*kk30%a%a%a+(1.0/6.0)*kk03%b%b%b+(1.0/24.0)*kk40%a%a%a%a+(1.0/24.0)*kk04%b%b%b%b+kk11%a%b+(1.0/2.0)*kk12%a%b%b+(1.0/2.0)*kk21%a%a%b+(1.0/6.0)*a%b%b%b%kk13+(1.0/6.0)*a%a%a%b%kk31+(1.0/4.0)*a%a%b%b%kk22-a%Xt-b%Yt);
+  anew  =a+(hh%gg2-gg%hh2)/(gg1%hh2-gg2%hh1);
+  bnew  =b-(hh%gg1-gg%hh1)/(gg1%hh2-gg2%hh1);
+  abser =(pow(anew-a,2)+pow(bnew-b,2));
+  a=anew;
+  b=bnew;
+  ind=ind+1;
+  }
+  vec dens1=-log(2*3.141592653589793)-0.5*log(gg1%hh2-gg2%hh1)+(kk10%a+kk01%b+(1.0/2.0)*kk20%a%a+(1.0/2.0)*kk02%b%b+(1.0/6.0)*kk30%a%a%a+(1.0/6.0)*kk03%b%b%b+(1.0/24.0)*kk40%a%a%a%a+(1.0/24.0)*kk04%b%b%b%b+kk11%a%b+(1.0/2.0)*kk12%a%b%b+(1.0/2.0)*kk21%a%a%b+(1.0/6.0)*a%b%b%b%kk13+(1.0/6.0)*a%a%a%b%kk31+(1.0/4.0)*a%a%b%b%kk22-a%Xt-b%Yt);
 
   resss.col(1)=a;
   resss.col(2)=b;
@@ -1083,8 +927,6 @@ if(Dtype=='Normal')
    #                   Generate TYPE of Solution
    #==============================================================================
 
-
-
 if(state4)
 {
    # DATA RESOLUTION -------------------------------------------------------------
@@ -1098,8 +940,9 @@ if(state4)
 
    }
 
-     t=seq(0,100,1/100)
-     tro=34
+  t=seq(0,100,1/100)
+  tro=34
+
   if(Jdist=='Normal')
   {
     Mstar1 =
@@ -1199,9 +1042,10 @@ if(state4)
    ,"nn1*m04+3*pp1*m13+3*nn1*pp1*m03+3*pp2*m12+3*nn1*pp2*m02+pp3*m11+nn1*pp3*m01"
    ,"3*nn1*m22+3*nn2*m12+nn3*m02+pp1*m31+3*nn1*pp1*m21+3*nn2*pp1*m11+nn3*pp1*m01")
   }
+
   if(Jdist=='MVNormal')
   {
-    if(Jtype==1)
+    if(Jtype=='Add')
    {
      Mstar1 =
   c("+1*mv10*m00"
@@ -1219,7 +1063,7 @@ if(state4)
    ,"mv10*m03+3*mv01*m12+3*mv11*m02+3*mv02*m11+3*mv12*m01+mv03*m10+mv13"
    ,"3*mv10*m21+3*mv20*m11+mv30*m01+mv01*m30+3*mv11*m20+3*mv21*m10+mv31")
    }
-   if(Jtype==2)
+   if(Jtype=='Mult')
    {
      Mstar1 =
   c("m10*(mv10)"
@@ -1310,7 +1154,9 @@ MAT2=rbind(
 
 
 
- namess2 = c('Lam1','Lam2','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Nu1x','Nu2x','Nu1y','Nu2y','MU1','MU2','SIG11','SIG12','SIG22')
+ #namess2 = c('Lam00','Lamy0','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Lam10','Lamx2','Lamy1','Lamy2','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
+ namess2 = c('Lam00','Lam10','Lam01','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
+
  checknames2 = rep(0,length(namess2))
  for(i in 1:length(namess2))
  {
@@ -1331,26 +1177,25 @@ MAT2=rbind(
  #print(func.list.timehomo2)
 
 
- if(checknames2[1]==0){Lam1=function(t){0}}
- if(checknames2[2]==0){Lam2=function(t){0}}
- if(checknames2[3]==0){Nmu11=function(t){0}}
- if(checknames2[4]==0){Nsig11=function(t){0};Nmu11=function(t){0}}
- if(checknames2[5]==0){Nmu21=function(t){0}}
- if(checknames2[6]==0){Nsig21=function(t){0};Nmu21=function(t){0}}
- if(checknames2[7]==0){Nmu12=function(t){0}}
- if(checknames2[8]==0){Nsig12=function(t){0};Nmu12=function(t){0}}
- if(checknames2[9]==0){Nmu22=function(t){0}}
- if(checknames2[10]==0){Nsig22=function(t){0};Nmu22=function(t){0}}
- if(checknames2[11]==0){Nu1x=function(t){0}}
- if(checknames2[12]==0){Nu2x=function(t){0}}
- if(checknames2[13]==0){Nu1y=function(t){0}}
- if(checknames2[14]==0){Nu2y=function(t){0}}
-
- if(checknames2[15]==0){MU1=function(t){0}}
- if(checknames2[16]==0){MU2=function(t){0}}
- if(checknames2[17]==0){SIG11=function(t){0}}
- if(checknames2[18]==0){SIG12=function(t){0}}
- if(checknames2[19]==0){SIG21=function(t){0}}
+ if(checknames2[1]==0){Lam00=function(t){0}}
+ if(checknames2[2]==0){Lam10=function(t){0}}
+ if(checknames2[3]==0){Lam01=function(t){0}}
+ #if(checknames2[4]==0){Nsig11=function(t){0};Nmu11=function(t){0}}
+ #if(checknames2[5]==0){Nmu21=function(t){0}}
+ #if(checknames2[6]==0){Nsig21=function(t){0};Nmu21=function(t){0}}
+ #if(checknames2[7]==0){Nmu12=function(t){0}}
+ #if(checknames2[8]==0){Nsig12=function(t){0};Nmu12=function(t){0}}
+ #if(checknames2[9]==0){Nmu22=function(t){0}}
+ #if(checknames2[10]==0){Nsig22=function(t){0};Nmu22=function(t){0}}
+ #if(checknames2[11]==0){Lam10=function(t){0}}
+ #if(checknames2[12]==0){Lamx2=function(t){0}}
+ #if(checknames2[13]==0){Lamy1=function(t){0}}
+ #if(checknames2[14]==0){Lamy2=function(t){0}}
+ if(checknames2[4]==0){Jmu1=function(t){0}}
+ if(checknames2[5]==0){Jmu2=function(t){0}}
+ if(checknames2[6]==0){Jsig11=function(t){0}}
+ if(checknames2[7]==0){Jsig12=function(t){0}}
+ if(checknames2[8]==0){Jsig22=function(t){0}}
 
  if(checknames2[1]==1)
  {
@@ -1367,65 +1212,72 @@ MAT2=rbind(
      dims[i] = paste0(dims[i],'+(',body(namess2[2])[2],')',c('*','%')[func.list.timehomo2[2]],'(',Mstar2[i],')')
   }
  }
-
-  if(checknames2[11]==1)
+  if(checknames2[3]==1)
  {
   for(i in 1:14)
   {
-     dims[i] = paste0(dims[i],'+(',body(namess2[11])[2],')',c('*','%')[func.list.timehomo2[11]],'(',Mstar1x[i],')')
+     dims[i] = paste0(dims[i],'+(',body(namess2[3])[2],')',c('*','%')[func.list.timehomo2[3]],'(',Mstar3[i],')')
   }
  }
+ # if(checknames2[11]==1)
+ #{
+ # for(i in 1:14)
+ # {
+ #    dims[i] = paste0(dims[i],'+(',body(namess2[11])[2],')',c('*','%')[func.list.timehomo2[11]],'(',Mstar1x[i],')')
+ # }
+ #}
 
-   if(checknames2[12]==1)
- {
-  for(i in 1:14)
-  {
-     dims[i] = paste0(dims[i],'+(',body(namess2[12])[2],')',c('*','%')[func.list.timehomo2[12]],'(',Mstar2x[i],')')
-  }
- }
-   if(checknames2[13]==1)
- {
-  for(i in 1:14)
-  {
-     dims[i] = paste0(dims[i],'+(',body(namess2[13])[2],')',c('*','%')[func.list.timehomo2[13]],'(',Mstar1y[i],')')
-  }
- }
+ #  if(checknames2[12]==1)
+ #{
+ # for(i in 1:14)
+ # {
+ #    dims[i] = paste0(dims[i],'+(',body(namess2[12])[2],')',c('*','%')[func.list.timehomo2[12]],'(',Mstar2x[i],')')
+ # }
+ #}
+ #  if(checknames2[13]==1)
+ #{
+ # for(i in 1:14)
+ # {
+ #    dims[i] = paste0(dims[i],'+(',body(namess2[13])[2],')',c('*','%')[func.list.timehomo2[13]],'(',Mstar1y[i],')')
+ # }
+ #}
 
-   if(checknames2[14]==1)
- {
-  for(i in 1:14)
-  {
-     dims[i] = paste0(dims[i],'+(',body(namess2[14])[2],')',c('*','%')[func.list.timehomo2[14]],'(',Mstar2y[i],')')
-  }
- }
- if((Jdist=='Normal'))
- {
- prem =
- '
-    double mm1 = mu11                                         ;
-    double mm2 = pow(mu11,2)+ pow(sig11,2)                          ;
-    double mm3 = pow(mu11,3)+ 3* pow(mu11,1)*pow(sig11,2)              ;
-    double mm4 = pow(mu11,4)+ 6* pow(mu11,2)*pow(sig11,2)+3*pow(sig11,4)  ;
+ #  if(checknames2[14]==1)
+ #{
+ # for(i in 1:14)
+ # {
+ #    dims[i] = paste0(dims[i],'+(',body(namess2[14])[2],')',c('*','%')[func.list.timehomo2[14]],'(',Mstar2y[i],')')
+ # }
+ #}
+ #if((Jdist=='Normal'))
+ #{
+ #prem =
+ #'
+ #   double mm1 = mu11                                         ;
+ #   double mm2 = pow(mu11,2)+ pow(sig11,2)                          ;
+ #   double mm3 = pow(mu11,3)+ 3* pow(mu11,1)*pow(sig11,2)              ;
+ #   double mm4 = pow(mu11,4)+ 6* pow(mu11,2)*pow(sig11,2)+3*pow(sig11,4)  ;
+ #
+ #   double oo1 = mu21                                         ;
+ #   double oo2 = pow(mu21,2)+ pow(sig21,2)                          ;
+ #   double oo3 = pow(mu21,3)+ 3* pow(mu21,1)*pow(sig21,2)              ;
+ #   double oo4 = pow(mu21,4)+ 6* pow(mu21,2)*pow(sig21,2)+3*pow(sig21,4)  ;
+ #
+ #   double nn1 = mu12                                         ;
+ #   double nn2 = pow(mu12,2)+ pow(sig12,2)                          ;
+ #  double nn3 = pow(mu12,3)+ 3* pow(mu12,1)*pow(sig12,2)              ;
+ #   double nn4 = pow(mu12,4)+ 6* pow(mu12,2)*pow(sig12,2)+3*pow(sig12,4)  ;
 
-    double oo1 = mu21                                         ;
-    double oo2 = pow(mu21,2)+ pow(sig21,2)                          ;
-    double oo3 = pow(mu21,3)+ 3* pow(mu21,1)*pow(sig21,2)              ;
-    double oo4 = pow(mu21,4)+ 6* pow(mu21,2)*pow(sig21,2)+3*pow(sig21,4)  ;
+ #   double pp1 = mu22                                         ;
+ #   double pp2 = pow(mu22,2)+ pow(sig22,2)                          ;
+ #   double pp3 = pow(mu22,3)+ 3* pow(mu22,1)*pow(sig22,2)              ;
+ #   double pp4 = pow(mu22,4)+ 6* pow(mu22,2)*pow(sig22,2)+3*pow(sig22,4)  ;
+ #'
+ #}
 
-    double nn1 = mu12                                         ;
-    double nn2 = pow(mu12,2)+ pow(sig12,2)                          ;
-    double nn3 = pow(mu12,3)+ 3* pow(mu12,1)*pow(sig12,2)              ;
-    double nn4 = pow(mu12,4)+ 6* pow(mu12,2)*pow(sig12,2)+3*pow(sig12,4)  ;
-
-    double pp1 = mu22                                         ;
-    double pp2 = pow(mu22,2)+ pow(sig22,2)                          ;
-    double pp3 = pow(mu22,3)+ 3* pow(mu22,1)*pow(sig22,2)              ;
-    double pp4 = pow(mu22,4)+ 6* pow(mu22,2)*pow(sig22,2)+3*pow(sig22,4)  ;
- '
- }
  if(Jdist=='MVNormal')
  {
-  print('MVNormal')
+  #print('MVNormal')
   prem =
  '
     double mv10 = mu1                                                          ;
@@ -1446,19 +1298,21 @@ MAT2=rbind(
    }
 
      premprem =rep('',4)
-     #'Lam1','Lam2','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Nu1x','Nu2x','Nu1y','Nu2y'
-     if(checknames2[3]==1){premprem[1]= paste0('double mu11=',body('Nmu11')[2],';','double sig11=',body('Nsig11')[2],';')}
-     if(checknames2[5]==1){premprem[3]= paste0('double mu21=',body('Nmu21')[2],';','double sig21=',body('Nsig21')[2],';')}
-     if(checknames2[7]==1){premprem[2]= paste0('double mu12=',body('Nmu12')[2],';','double sig12=',body('Nsig12')[2],';')}
-     if(checknames2[9]==1){premprem[4]= paste0('double mu22=',body('Nmu22')[2],';','double sig22=',body('Nsig22')[2],';')}
-     if(checknames2[3]==0){premprem[1]= paste0('double mu11=',0,';','double sig11=',0,';')}
-     if(checknames2[5]==0){premprem[3]= paste0('double mu21=',0,';','double sig21=',0,';')}
-     if(checknames2[7]==0){premprem[2]= paste0('double mu12=',0,';','double sig12=',0,';')}
-     if(checknames2[9]==0){premprem[4]= paste0('double mu22=',0,';','double sig22=',0,';')}
+     #'Lam00','Lamy0','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Lam10','Lamx2','Lamy1','Lamy2'
+     #if(checknames2[3]==1){premprem[1]= paste0('double mu11=',body('Nmu11')[2],';','double sig11=',body('Nsig11')[2],';')}
+     #if(checknames2[5]==1){premprem[3]= paste0('double mu21=',body('Nmu21')[2],';','double sig21=',body('Nsig21')[2],';')}
+     #if(checknames2[7]==1){premprem[2]= paste0('double mu12=',body('Nmu12')[2],';','double sig12=',body('Nsig12')[2],';')}
+     #if(checknames2[9]==1){premprem[4]= paste0('double mu22=',body('Nmu22')[2],';','double sig22=',body('Nsig22')[2],';')}
+     #namess2 = c('Lam00','Lam10','Lam01','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
+     #if(checknames2[3]==0){premprem[1]= paste0('double mu11=',0,';','double sig11=',0,';')}
+     #if(checknames2[5]==0){premprem[3]= paste0('double mu21=',0,';','double sig21=',0,';')}
+     #if(checknames2[7]==0){premprem[2]= paste0('double mu12=',0,';','double sig12=',0,';')}
+     #if(checknames2[9]==0){premprem[4]= paste0('double mu22=',0,';','double sig22=',0,';')}
      if(Jdist=='MVNormal')
      {
-        print('MVNormal')
-        premprem[1]= paste0('double mu1=',body('MU1')[2],';\n','double mu2=',body('MU2')[2],';\n','double sig11=',body('SIG11')[2],';\n','double sig12=',body('SIG12')[2],';\n','double sig22=',body('SIG22')[2],';\n')
+        #print('MVNormal')
+        #namess2 = c('Lam00','Lam10','Lam01','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
+        premprem[1]= paste0('double mu1=',body('Jmu1')[2],';\n','double mu2=',body('Jmu2')[2],';\n','double sig11=',body('Jsig11')[2],';\n','double sig12=',body('Jsig12')[2],';\n','double sig22=',body('Jsig22')[2],';\n')
         premprem[2:4]=''
      }
 
@@ -1467,14 +1321,14 @@ MAT2=rbind(
    {
      prm = paste0(prm,premprem[i],'\n ')
    }
-   ##print(prm)
-   b = rep('',6)
-   if(checknames2[1 ]==1){b[1] = paste0('(',body('Lam1')[2],')',c('*','%')[func.list.timehomo2[1 ]],'m00')}else{b[1] = paste0('(+0*a.col(0))')}
-   if(checknames2[2 ]==1){b[2] = paste0('(',body('Lam2')[2],')',c('*','%')[func.list.timehomo2[2 ]],'m00')}else{b[2] = paste0('(+0*a.col(0))')}
-   if(checknames2[11]==1){b[3] = paste0('(',body('Nu1x')[2],')',c('*','%')[func.list.timehomo2[11]],'mm10')}else{b[3] = paste0('(+0*a.col(0))')}
-   if(checknames2[12]==1){b[4] = paste0('(',body('Nu2x')[2],')',c('*','%')[func.list.timehomo2[12]],'mm10')}else{b[4] = paste0('(+0*a.col(0))')}
-   if(checknames2[13]==1){b[5] = paste0('(',body('Nu1y')[2],')',c('*','%')[func.list.timehomo2[13]],'mm01')}else{b[5] = paste0('(+0*a.col(0))')}
-   if(checknames2[14]==1){b[6] = paste0('(',body('Nu2y')[2],')',c('*','%')[func.list.timehomo2[14]],'mm01')}else{b[6] = paste0('(+0*a.col(0))')}
+
+   b = rep('(+0*a.col(0))',6)
+   if(checknames2[1]==1){b[1] = paste0('(',body('Lam00')[2],')',c('*','%')[func.list.timehomo2[1 ]],'m00')}else{b[1] = paste0('(+0*a.col(0))')}
+   if(checknames2[2]==1){b[2] = paste0('(',body('Lam10')[2],')',c('*','%')[func.list.timehomo2[2 ]],'m10')}else{b[2] = paste0('(+0*a.col(0))')}
+   if(checknames2[3]==1){b[3] = paste0('(',body('Lam01')[2],')',c('*','%')[func.list.timehomo2[3 ]],'m01')}else{b[3] = paste0('(+0*a.col(0))')}
+   #if(checknames2[12]==1){b[4] = paste0('(',body('Lamx2')[2],')',c('*','%')[func.list.timehomo2[12]],'mm10')}else{b[4] = paste0('(+0*a.col(0))')}
+   #if(checknames2[13]==1){b[5] = paste0('(',body('Lamy1')[2],')',c('*','%')[func.list.timehomo2[13]],'mm01')}else{b[5] = paste0('(+0*a.col(0))')}
+   #if(checknames2[14]==1){b[6] = paste0('(',body('Lamy2')[2],')',c('*','%')[func.list.timehomo2[14]],'mm01')}else{b[6] = paste0('(+0*a.col(0))')}
 
    for(i in 1:28)
    {
@@ -1559,8 +1413,8 @@ MAT2=rbind(
                    '\n',dims[5+14],'\n',dims[6+14],'\n',dims[7+14],'\n',dims[8+14],'\n',dims[9+14],'\n',dims[10+14],
                    '\n',dims[11+14],'\n',dims[12+14],'\n',dims[13+14],'\n',dims[14+14],'\n',b[1],'\n',b[2],'\n',b[3],'\n',b[4],'\n',b[5],'\n',b[6])
 
-   #print(paste0(prm,prem))
-    write.table(odekernel,'Check_ODE_dims.txt')
+
+   # write.table(odekernel,'Check_ODE_dims.txt')
    # WRIGHT AND SOURCE -----------------------------------------------------------
      txt.full=paste(txtA,odekernel,txtB,txtC)
      type.sol ="                  GENERALIZED QUADRATIC DIFFUSON"
@@ -1601,9 +1455,14 @@ MAT2=rbind(
          namess4[i]=paste0(namess4[i],' : ',trim(body(namess4[i])[2]))
         }
    }
+   indnames2 = rep(0,5)
    for(j in whichnames2)
    {
-       namess2[j]=paste0(namess2[j],' : ',trim(body(namess2[j])[2]))
+       if(sum(obs==namess2[j]))
+       {
+         indnames2[j]=TRUE
+         namess2[j]=paste0(namess2[j],' : ',trim(body(namess2[j])[2]))
+       }
    }
    prior.list = trim(prior.list)
    namess4=matrix(namess4,length(namess4),1)
@@ -1615,7 +1474,9 @@ MAT2=rbind(
    buffer5=c('___________________ Diffusion Coefficients _____________________')
    buffer6=c('_____________________ Prior Distributions ______________________')
    buffer7=c('_______________________ Model/Chain Info _______________________')
-
+   buffer8=c('......................... Intensity ............................')
+   buffer9=c('........................... Jumps ..............................')
+   buffer10=c('_______________________ Jump Components ________________________')
    Info=c(buffer0,type.sol,buffer0,buffer4,
          namess4[1:6][which(indnames[1:6]==T)],
          buffer3,
@@ -1628,15 +1489,18 @@ MAT2=rbind(
          namess4[25:30][which(indnames[25:30]==T)],
          buffer3,
          namess4[31:36][which(indnames[31:36]==T)],
-         buffer3,
-         namess2[c(1:2,11:14)],
-         buffer3,
-         namess2[c(3:10)],
+         buffer10,
+         buffer8,
+         namess2[c(1:3)][which(indnames2[1:3]==T)],
+         buffer9,
+         namess2[c(4:8)][which(indnames2[4:8]==T)],
          buffer6,'',prior.list)
    Info=data.frame(matrix(Info,length(Info),1))
    colnames(Info)=''
-   print(Info,row.names = FALSE,right=F)
-
+   if(print.output)
+   {
+     print(Info,row.names = FALSE,right=F)
+   }
     ############################################################################
     ############################################################################
     ############################################################################
@@ -1806,8 +1670,10 @@ MAT2=rbind(
              buffer1)
     Info2=data.frame(matrix(Info2,length(Info2),1))
     colnames(Info2)=''
-    print(Info2,row.names = FALSE,right=F)
-
+    if(print.output)
+    {
+      print(Info2,row.names = FALSE,right=F)
+    }
     if(plot.chain)
     {
       nper=length(theta)
@@ -1829,11 +1695,11 @@ MAT2=rbind(
         d2=d2[row(test)[wh[1]]]
         par(mfrow=c(d1,d2))
       }
-      cols=rainbow(nper)
+      cols=rainbow_hcl(nper, start = 10, end = 275,c=100,l=70)
       ylabs=paste0('theta[',1:nper,']')
       for(i in 1:nper)
       {
-          plot(prop.matrix[i,],col='gray80',type='s',main=ylabs[i],xlab='Iteration',ylab='')
+          plot(prop.matrix[i,],col='gray90',type='s',main=ylabs[i],xlab='Iteration',ylab='')
           lines(par.matrix[i,],col=cols[i],type='s')
           abline(v=burns,lty='dotdash')
           if(adapt!=0){abline(v=min(5000,round(burns/2)),lty='dotted',col='red')}

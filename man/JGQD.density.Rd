@@ -8,33 +8,54 @@ Generate the Transition Density of a Scalar Jump Generalized Quadratic Diffusion
  \if{html}{
  \code{JGQD.density()} approximates transitional densities of jump diffusions of the form:
 
- \figure{JGQDeqn1.png}{JGQD}
+ \figure{ScalarEqn1.png}
+
+ where
+
+ \figure{ScalarEqn2.png}
+
+  \figure{ScalarEqn3.png}
+
+  and
+
+   \figure{ScalarEqn4.png}
+
+  describes a Poisson process with jumps of the form:
+
+   \figure{ScalarEqn6.png}
+
+  arriving with intensity
+
+   \figure{ScalarEqn5.png}
+
+  subject to a jump distribition of the form:
+
+  \figure{ScalarEqn7.png}
+
  }
  \if{latex}{
- \code{JGQD.density()} supports jump diffusions of the form:
- \deqn{dX_t = \mu_{\theta}(X,t)dt +\sigma_{\theta}(X_t,t)dW_t+dP_t\\}
- with drift
- \deqn{\mu_{\theta}(X,t) = G_0(t,\theta)+G_1(t,\theta)X_t+G_2(t,\theta)X_t^2\\}
- and diffusion
- \deqn{\sigma_{\theta}(X,t)=\sqrt{Q_0(t,\theta)+Q_1(t,\theta)X_t+Q_2(t,\theta)X_t^2}\\}
- where \eqn{dP_t=j_{\theta}(X_t,\dot{z}_t)dN_t} is a Poisson process with intensity
- \deqn{\lambda_{\theta}(X,t)={\lambda_0(t,\theta)+\lambda_1(t,\theta)X_t+\lambda_2(t,\theta)X_t^2},\\}
- jump coefficient:
- \deqn{j_{\theta}(X_t,\dot{z}_t) = \dot{z}_t} or \deqn{j_{\theta}(X_t,\dot{z}_t) = \dot{z}_tX_t\\ }
+  \code{JGQD.density()} approximates transitional densities of jump diffusions of the form:
+ \deqn{dX_t = \mu(X,t)dt +\sigma(X_t,t)dW_t+dP_t\\}
+ where
+ \deqn{\mu(X,t) = G_0(t,\theta)+G_1(t,\theta)X_t+G_2(t,\theta)X_t^2,\\}
+ \deqn{\sigma(X,t)=\sqrt{Q_0(t,\theta)+Q_1(t,\theta)X_t+Q_2(t,\theta)X_t^2,}\\}
+ and \eqn{dP_t=j(X_t,\dot{z}_t)dN_t} describes a Poisson process with intensity:
+ \deqn{\lambda(X,t)={\lambda_0(t,\theta)+\lambda_1(t,\theta)X_t+\lambda_2(t,\theta)X_t^2},\\}
+ jump coefficient
+ \deqn{j(X_t,\dot{z}_t) = \dot{z}_t} or \deqn{j(X_t,\dot{z}_t) = \dot{z}_tX_t\\ }
  and
 \deqn{\dot{z}_t\sim\mbox{Normal}(\mu_J(t,\theta),\sigma_J^2(t,\theta)),\\}
 \deqn{\dot{z}_t\sim\mbox{Exponential}(\lambda_J(t,\theta)),\\}
 \deqn{\dot{z}_t\sim\mbox{Gamma}(\alpha_J(t,\theta),\beta_J(t,\theta)),\\}
 or
-
 \deqn{\dot{z}_t\sim\mbox{Laplace}(a_J(t,\theta),b_J(t,\theta)).\\}
  }
  }
 \usage{
 JGQD.density(Xs = 4, Xt = seq(5, 8, 1/10), s = 0, t = 5, delt =1/100,
              Jdist = "Normal", Jtype = "Add", Dtype = "Saddlepoint",
-             Trunc = c(8, 4), factorize = TRUE, beta, Integ = TRUE,
-             print.output = TRUE)
+             Trunc = c(8, 4), factorize = FALSE, factor.type = "Diffusion",
+              beta, print.output = TRUE, eval.density = TRUE)
 }
 \arguments{
   \item{Xs}{Initial value of the process at time s.}
@@ -47,10 +68,13 @@ JGQD.density(Xs = 4, Xt = seq(5, 8, 1/10), s = 0, t = 5, delt =1/100,
 \item{Jdist}{Valid entries are 'Normal', 'Exponential', 'Gamma' or 'Laplace'.}
 \item{Jtype}{Valid types are 'Add' or 'Mult'.}
 \item{factorize}{Should factorization be used (default = TRUE).}
-\item{beta}{Variable used for special cases.}
-\item{Integ}{Variable used for special cases.}
-\item{print.output}{if \code{TRUE}, model information is printed to the console.}
+\item{factor.type}{Can be used to envoke a special factorization in order to evaluate Hawkes processes nested within the JGQD framework.}
+\item{beta}{Variable used for a special case jump structure (for research purposes).}
+\item{print.output}{If \code{TRUE}, model information is printed to the console.}
+\item{eval.density}{If \code{TRUE}, the density is evaluated in addition to calculating the moment eqns.}
 }
+
+
 \details{
 \if{html}{\figure{TransDens1.png}{vdfs}}
 
@@ -95,7 +119,28 @@ Varughese, M.M. 2013 Parameter estimation for multivariate diffusion systems. \e
 Etienne A.D. Pienaar: \email{etiannead@gmail.com}
 }
 
+\section{Interface}{
+\if{html}{
+\bold{DiffusionRjgqd} uses a functional interface whereby th coefficients of a jump diffusion is defined by functions in the current workspace. By defining time-dependent functions with names that match the coefficients of the desired diffusion, \bold{DiffusionRjgqd} reads the workspace and prepares the appropriate algorithm.
 
+\figure{difftable.png}{diffusiontable,width=100}
+
+
+In the case of jump diffusions, additional coefficients are required for the jump mechanism as well. Intensity coefficients and jump distributions, along with their corresponding R-names, are given in the tables below.
+
+
+Intensity:
+
+\figure{intensitytable.png}{intensitytable}
+
+
+Jump distributions:
+
+\figure{jumptable.png}{jumptable}
+
+
+}
+}
 
 \section{Warning}{
 \bold{Warning [1]}:
@@ -111,97 +156,106 @@ See \code{\link{JGQD.mcmc}} and \code{\link{BiJGQD.density}}.
 
 \examples{
 \donttest{
-rm(list=ls(all=T))
+
 #===============================================================================
-# Generate the transition density of a CIR process with time dependant
-# drift and state-dependant jump intensity.
+# Compare transition densities and mean trajectories of a non-linear jump
+# diffusion for various jump distributions.
 #-------------------------------------------------------------------------------
-G0=function(t){6+2*sin(8*pi*t)}
-G1=function(t){-1}
-Q1=function(t){0.5}
+rm(list=ls(all=TRUE))
+library(DiffusionRjgqd)
 
-Jmu    = function(t){1.5}
+JGQD.remove()
+# Define the jump diffusion using the DiffusionRjgqd syntax:
+G1=function(t){0.2*5+0.1*sin(2*pi*t)}
+G2=function(t){-0.2}
+Q1=function(t){0.2}
+
+# State dependent intensity:
+Lam0 = function(t){1}
+Lam1    = function(t){0.1}
+
+# Normally distributed jumps: N(1,0.2)
+Jmu    = function(t){1.0}
 Jsig   = function(t){0.2}
-Lam = function(t){1}
-Nu1    = function(t){0.05}
-
-mu     = function(x,t){G0(t)+G1(t)*x}
-sigma  = function(x,t){sqrt(Q1(t)*x)}
-j      = function(x,z){z}
-
-#' Now simulate the jump diffusion
-#+
-TT = 0.2
-simulate=function(x0=4,N=25000,pts =seq(0.1*TT,TT,length=4))
-{
-  d=0
-  delta=1/1000
-  tt=seq(0,TT,delta)
-  X=rep(x0,N)
-
-  kkk=1
-  MM= matrix(0,4,length(tt))
-  MM[,1]=X[1]^{1:4}
-
-  xtrak = rep(x0,length(tt))
-  jtrak = rep(0,length(tt))
-  etrak = rep(0,length(tt))
-  ltrak = rep(0,length(tt))
-  L=list()
-  kkk =1
-  for(i in 2:length(tt))
-  {
-    X=X+mu(X,d)*delta+sigma(X,d)*rnorm(N,sd=sqrt(delta))
-    d=d+delta
-
-    events = ((Lam(d)+Nu1(d)*X)*delta>runif(N))
-    xpre=X[1]
-    if(any(events))
-    {
-      wh=which(events)
-      X[wh]=X[wh]+j(X[wh],rnorm(length(wh),Jmu(d),Jsig(d)))
-
-    }
-    jtrak[i] = X[1]-xpre
-    xtrak[i]  = X[1]
-
-    MM[1,i]=sum(X)/N
-    MM[2,i]=sum(X^2)/N
-    MM[3,i]=sum(X^3)/N
-    MM[4,i]=sum(X^4)/N
-    if(sum(pts==round(d,3))!=0)
-    {
-      L[[kkk]] = hist(X,plot=F,breaks=50)
-      kkk=kkk+1
-    }
-  }
-  return(list(MM=MM,tt=tt,X=X,xtrak=xtrak,etrak=etrak,jtrak=jtrak,ltrak=ltrak,hists=L,pts=pts))
-}
-res2=simulate()
-
-res=JGQD.density(4,seq(2,10,1/10),0,TT,1/100)
+# Normal distribution is the default:
+res_1  = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,factorize=FALSE)
 
 
-#' Time dependent histograms
-#+
-library(rgl)
-persp3d(res$Xt,res$time,pmax(pmin(res$density, 1.5),0),col='white',alpha=0.5,box=F,
-        xlab='Xt',ylab='Time',zlab='')
-cols=colorRampPalette(c("red", "yellow", "green"))
-for(i in 2:4)
-{
-  h1 =res2$hists[[i-1]]
-  y=rep(h1$density,each=2)
-  x=c(rbind(h1$breaks[-length(h1$breaks)],h1$breaks[-1]))
-  hd=cbind(0,y,0)
-  tt=res2$pts[i]
-  surface3d(x,c(tt-0.0001,tt,tt+0.0001),hd,col=cols(5)[i],alpha=1)
-  lines3d(res$Xt,tt,res$density[,res2$pts[i]*100],col='black',lwd=2)
-}
+# Gamma distributed jumps: Gamma(0.5,0.5)
+Jalpha = function(t){0.5}
+Jbeta  = function(t){0.5}
+# Jdist sets the jump distribution type:
+res_2  = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Gamma',factorize=FALSE)
+
+# Laplace jump parameters: Laplace(0.5*(sin(pi*t)),0.2)
+Ja    = function(t){0.5*sin(pi*t)}
+Jb    = function(t){0.2}
+res_3 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
+
+par(mfrow=c(2,2))
+persp(x=res_1$Xt,y=res_1$time,z=pmin(res_1$density,0.8),col=3,xlab='State (X_t)',ylab='Time (t)',
+          zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145,
+          main ='Normally distributed jumps',zlim=c(0,0.8))
+
+persp(x=res_2$Xt,y=res_2$time,z=pmin(res_2$density,0.8),col=4,xlab='State (X_t)',ylab='Time (t)',
+          zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145,
+          main ='Gamma distributed jumps',zlim=c(0,0.8))
+
+persp(x=res_3$Xt,y=res_3$time,z=pmin(res_3$density,0.8),col=5,xlab='State (X_t)',ylab='Time (t)',
+          zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145,
+          main ='Laplace distributed jumps',zlim=c(0,0.8))
+plot(res_1$moments[1,]~res_1$time,type='n',main='Mean trajectories',ylab='E[X_t]',xlab='Time (t)')
+lines(res_1$moments[1,]~res_1$time,col=1+2)
+lines(res_2$moments[1,]~res_2$time,col=1+3)
+lines(res_3$moments[1,]~res_3$time,col=1+4)
+
+#===============================================================================
+# Compare mean trajectories and zero-jump probabilities of a non-linear jump
+# diffusion for various jump intensities.
+#-------------------------------------------------------------------------------
+JGQD.remove()
+# Define the jump diffusion using the DiffusionRjgqd syntax:
+G1=function(t){0.2*6}
+G2=function(t){-0.2}
+Q0=function(t){1.2}
+
+# Laplace jump parameters: Laplace(05,0.2)
+Ja    = function(t){0.5}
+Jb    = function(t){0.2}
+
+
+# Constant intensity:
+Lam0 = function(t){1}
+res_1 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
+
+# State dependent intensity:
+Lam0 = function(t){0}
+Lam1    = function(t){0.1}
+res_2 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
+
+# State dependent, inhomogeneous intensity:
+Lam0 = function(t){0}
+Lam1    = function(t){0.1*(1+sin(5*pi*t))}
+res_3 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
+
+
+par(mfrow=c(1,2))
+
+plot(res_1$moments[1,]~res_1$time,type='n',main='Mean trajectories',ylab='E[X_t]',xlab='Time (t)')
+lines(res_1$moments[1,]~res_1$time,col=2)
+lines(res_2$moments[1,]~res_2$time,col=3)
+lines(res_3$moments[1,]~res_3$time,col=4)
+
+plot(res_1$zero_jump_prob~res_1$time,type='n',main=expression(P(N_t ==0)),ylab='Probability',
+     xlab='Time (t)',ylim=c(0,1))
+lines(res_1$zero_jump_prob~res_1$time,col=2)
+lines(res_2$zero_jump_prob~res_2$time,col=3)
+lines(res_3$zero_jump_prob~res_3$time,col=4)
+
 
 #===============================================================================
 }
 }
 
 \keyword{ transition density }
-\keyword{ cumulants }
+\keyword{ moments }

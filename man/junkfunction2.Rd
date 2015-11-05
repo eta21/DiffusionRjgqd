@@ -1,14 +1,14 @@
 \name{RcppArmadillo-Functions}
-\alias{junkfunction}
+\alias{junkfunction2}
 \title{A Junk Funktion For Build Purposes}
 \description{
   This function was created as a filler in order for the package to build correctly.
 }
 \usage{
-junkfunction()
+junkfunction2()
 }
 \value{
-  \code{junkfunction()} does nothing useful.
+  \code{junkfunction2()} does nothing useful.
  
 }
 \details{

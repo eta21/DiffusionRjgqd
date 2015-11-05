@@ -1,7 +1,7 @@
 \name{JGQD.dic}
 \alias{JGQD.dic}
 \title{
-Summarize MCMC Selection Output for a List of JGQD.mcmc or BiJGQD.mcmc objects.
+Summarize MCMC Selection Output for a List of JGQD.mcmc or BiJGQD.mcmc Objects.
 }
 \description{\code{JGQD.dic()}  summarizes the MCMC output from a list of \code{JGQD.mcmc()} objects. This may be used to neatly summarize the MCMC output of various models fitted to a given dataset.
 }
@@ -43,9 +43,15 @@ Etienne A.D. Pienaar: \email{etiannead@gmail.com}
 
 \examples{
 \donttest{
+
 #===============================================================================
+
+ # For detailed notes and examples on how to use the BiJGQD.dic() function, see
+ # the following vignette:
+
+ RShowDoc('Part_4_Likelihood_Inference',type='html','DiffusionRjgqd')
 
 #===============================================================================
 }
 }
-\keyword{Deviance information criterion (DIC)}
+\keyword{deviance information criterion (DIC)}

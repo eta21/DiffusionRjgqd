@@ -1,6 +1,6 @@
 globalVariables(c('priors','Lam0','Lam1','Jbeta','Jmu','Jsig','Jalpha','Jlam','Ja','Jb'))
 JGQD.mcmc <-
-function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updates/2),25000),Jtype='Add',Jdist='Normal',Dtype='Saddlepoint',RK.order=4,exclude=NULL,plot.chain=TRUE,wrt=TRUE,Tag=NA,factorize=TRUE,print.output=TRUE)
+function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updates/2),25000),Jtype='Add',Jdist='Normal',Dtype='Saddlepoint',RK.order=4,exclude=NULL,plot.chain=TRUE,wrt=FALSE,Tag=NA,factorize=TRUE,print.output=TRUE)
 {
   P=100;alpha=0.1;lower=0;upper=50
   Trunc=c(4,4)
@@ -66,7 +66,7 @@ function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updates/2),25000)
     ,'36. Input: NAs not allowed.\n'
     ,'37. Input: length(Dtype)!=1.\n'
     ,'38. Input: NAs not allowed.\n'
-    ,'39. Input: {Jdist} has to be of type Normal or Exponential.\n'
+    ,'39. Input: {Jdist} has to be of type Normal, Exponential, Gamma or Laplace.\n'
     ,'40. Input: {Jtype} has to be of type Add or Mult.\n'
     ,'41. Input: {factorize} has to be TRUE or FALSE.\n'
     ,'42. Input: Current version supports {Trunc[1]} = 4 or 8.\n'
@@ -296,7 +296,7 @@ using namespace R;
     {
      return(a%b);
     }
-
+    // [[Rcpp::export]
     mat f(mat a,vec theta,vec t,int N2)
     {
 
@@ -599,7 +599,7 @@ List  solver(vec Xs,vec Xt,vec theta,int N,double delt,int N2,vec tt,int P,doubl
   vec dd = tt;
   double d=tt(0);
   double t=tt(1);
-  double delta;
+
   for (int i = 1; i < N+1; i++)
   {
   delt = std::min(delt,t-d);
@@ -1038,7 +1038,7 @@ if(DTR.order==8)
         	,' mm6 = pow(mu,6)+ 15*pow(mu,4)*pow(sig,2)+45*pow(mu,2)*pow(sig,4)+15*pow(sig,6);'
         	,' mm7 = pow(mu,7)+ 21*pow(mu,5)*pow(sig,2)+105*pow(mu,3)*pow(sig,4)+105*mu*pow(sig,6);'
         	,' mm8 = pow(mu,8)+ 28*pow(mu,6)*pow(sig,2)+210*pow(mu,4)*pow(sig,4)+420*pow(mu,2)*pow(sig,6)+105*pow(sig,8);')
-        	
+
          if((jump.inhomogeneous[3]==2)&&(jump.inhomogeneous[4]==2))
          {
            norm.prem =
@@ -1090,7 +1090,7 @@ if(DTR.order==8)
           prem = paste0(prem,c('double','vec')[max(jump.inhomogeneous[6],jump.inhomogeneous[7])],gam.prem[i],'\n    ')
         }
     }
-    
+
     if(Jdist=='Laplace')
     {
          ################################################################################################## Might be an error here (%'s)
@@ -1105,7 +1105,7 @@ if(DTR.order==8)
         	,' mm6 = 0.5*(+2*pow(aa,2)+4*pow(bb,2))                                     ;'
         	,' mm7 = 0.5*(+2*pow(aa,3)+12*aa%pow(bb,2))                                  ;'
         	,' mm8 = 0.5*(+2*pow(aa,4)+24*pow(aa,2)%pow(bb,2)+48*pow(bb,4))               ;')
-        	
+
          if((jump.inhomogeneous[8]==2)&&(jump.inhomogeneous[9]==2))
          {
               lap.prem =
@@ -1216,7 +1216,7 @@ if(DTR.order==8)
    #                           Interface Module
    #==============================================================================
 
-    namess4=c('G0','G1','G2','Q0','Q1','Q2','Lam0','Lam1','Jmu','Jsig','Jalpha','Jbeta','Jlam')
+    namess4=c('G0','G1','G2','Q0','Q1','Q2','Lam0','Lam1','Jmu','Jsig','Jlam','Jalpha','Jbeta','Ja','Jb')
     trim <- function (x) gsub("([[:space:]])", "", x)
     function.list=objects(pos=1)
     checklist=rep(0,length(namess4))
@@ -1231,18 +1231,13 @@ if(DTR.order==8)
     namess4=matrix(namess4,length(namess4),1)
 
     dinfo = c('Density approx. : ',
-              'P               : ',
-              'alpha           : ',
+
               'Trunc. Order    : ',
               'Dens.  Order    : ')
     dinfo[1] =paste0(dinfo[1],Dtype)
-    if(Dindex!=1)
-    {
-      dinfo[2] =paste0(dinfo[2],P)
-      dinfo[3] =paste0(dinfo[3],alpha)
-    }
-    dinfo[4] =paste0(dinfo[4],Trunc[1])
-    dinfo[5] =paste0(dinfo[5],Trunc[2])
+
+    dinfo[2] =paste0(dinfo[2],Trunc[1])
+    dinfo[3] =paste0(dinfo[3],Trunc[2])
 
     buffer0=c('================================================================')
     buffer1=c('----------------------------------------------------------------')
@@ -1274,11 +1269,13 @@ if(DTR.order==8)
 
     tme=Sys.time()
 
+
     par.matrix=matrix(0,length(theta),updates)
     ll=rep(0,updates)
     acc=ll
     kk=0
     par.matrix[,1]=theta
+    prop.matrix =par.matrix
     rs=solver(X[-nnn],X[-1],c(0,theta),mesh,delt,nnn-1,T.seq[-nnn],P,alpha,lower,upper,TR.order)
     lold=sum(rs$like)
     ll[1]=lold
@@ -1295,11 +1292,13 @@ if(DTR.order==8)
     success = TRUE
     stps= rep(0,updates)
     i = 2
+
     while(i<=updates)
     {
         theta.temp=theta
 
         theta=theta+rnorm(length(theta),sd=sds)
+        prop.matrix[,i] = theta
         rs=solver(X[-nnn],X[-1],c(0,theta),mesh,delt,nnn-1,T.seq[-nnn],P,alpha,lower,upper,TR.order)
         lnew=sum(rs$like)
         stps[i]=(rs$steps)
@@ -1316,6 +1315,7 @@ if(DTR.order==8)
             i = max(i-10,2)
             theta = par.matrix[,i]
             theta=theta+rnorm(length(theta),sd=sds)
+            prop.matrix[,i] = theta
             rs=solver(X[-nnn],X[-1],c(0,theta),mesh,delt,nnn-1,T.seq[-nnn],P,alpha,lower,upper,TR.order)
             lnew=sum(rs$like)
             stps[i]=(rs$steps)
@@ -1335,14 +1335,14 @@ if(DTR.order==8)
         par.matrix[,i]=theta
         ll[i]=lold
         kk=kk+is.true
-        acc[i]=kk/i
+        acc[i]=is.true
         if(any(is.na(theta))){print('Fail'); ;failed.chain=TRUE;break;}
          if(max.retries>5000){print('Fail: Failed evaluation limit exceeded!');failed.chain=TRUE;break;}
         setTxtProgressBar(pb, i)
         i=i+1
     }
     close(pb)
-
+    acc = cumsum(acc)/(1:updates)
     tme.eval = function(start_time)
     {
       start_time = as.POSIXct(start_time)
@@ -1396,11 +1396,12 @@ if(DTR.order==8)
       d2=d2[row(test)[wh[1]]]
       par(mfrow=c(d1,d2))
       #plot(pmin(stps,50),type='s')
-      cols=rainbow(nper)
+      cols=rainbow_hcl(nper, start = 10, end = 275,c=100,l=70)
       ylabs=paste0('theta[',1:nper,']')
       for(i in 1:nper)
       {
-          plot(par.matrix[i,],col=cols[i],type='s',main=ylabs[i],xlab='Iteration',ylab='')
+          plot(prop.matrix[i,],col='gray90',type='s',main=ylabs[i],xlab='Iteration',ylab='')
+          lines(par.matrix[i,],col=cols[i],type='s')
           abline(v=burns,lty='dotdash')
 
       }
@@ -1425,7 +1426,7 @@ if(DTR.order==8)
       lines(term.discont~time[-1],col='darkblue')
 
     }
-    ret=list(par.matrix=t(par.matrix),acceptance.rate=acc,elapsed.time=tme,model.info=model.inf,failed.chain=failed.chain,retry.indexes=retry.indexes,zero.jump=term.discont)
+    ret=list(par.matrix=t(par.matrix),acceptance.rate=acc,elapsed.time=tme,model.info=model.inf,failed.chain=failed.chain,retry.indexes=retry.indexes,zero.jump=excess[1,],prop.matrix=t(prop.matrix))
     class(ret) = 'JGQD.mcmc'
     return(ret)
   }

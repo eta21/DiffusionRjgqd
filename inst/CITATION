@@ -1,0 +1,16 @@
+citHeader("To cite DiffusionRjgqd in publications use:")
+
+citEntry(entry = "Manual",
+  title        = "Diffusion{R}jgqd: An {R} Package for Performing Inference and Analysis on Time-Inhomogeneous Quadratic Jump Diffusions with State-Dependent Intensity",
+  author       = personList(as.person("Etienne A D Pienaar"),
+                   as.person("Melvin M Varughese")),
+  year         = "2015",
+  note         = "R package version 0.1.0",
+  url          = "https://CRAN.R-project.org/package=DiffusionRjgqd",
+  textVersion  =
+  paste("Etienne A. D. Pienaar, Melvin M. Varughese (2015).",
+        "Diffusion{R}jgqd: An {R} Package for Performing Inference and Analysis on Time-Inhomogeneous Quadratic Jump Diffusions with State-Dependent Intensity.",
+        "Technical report.")
+)
+
+

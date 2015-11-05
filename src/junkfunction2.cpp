@@ -7,7 +7,7 @@
 
 
 // [[Rcpp::export]]
-arma::mat junkfunction() {
+arma::mat junkfunction2() {
     arma::mat m1 = arma::eye<arma::mat>(3, 3);
     arma::mat m2 = arma::eye<arma::mat>(3, 3);
 	                     

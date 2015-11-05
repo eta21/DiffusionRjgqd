@@ -14,7 +14,9 @@ JGQD.plot=function(x,thin=1,burns,h=FALSE)
     tt = seq(burns,dim(x$par.matrix)[1],thin)
 
     #windows()
+
     nper=length(theta)
+    #print(nper)
     if(nper==1){par(mfrow=c(1,2));d1=1;d2=1;}
     if(nper==2){par(mfrow=c(2,2));d1=1;d2=2;}
     if(nper==3){par(mfrow=c(2,2));d1=2;d2=2;}
@@ -23,17 +25,20 @@ JGQD.plot=function(x,thin=1,burns,h=FALSE)
       d1=1:((nper)+1)
       d2=d1
       O=outer(d1,d2)
+      #print(O)
       test=O-((nper)+1)
+      #print(test)
       test[test<0]=100
-      test=test[1:4,1:4]
+      test=test[1:max(4,ceiling(sqrt(nper+1))),1:max(4,ceiling(sqrt(nper+1)))]
       test
       wh=which(test==min(test))
-
+      # print(test)
       d1=d1[col(test)[wh[1]]]
       d2=d2[row(test)[wh[1]]]
       par(mfrow=c(d1,d2))
     }
-    cols=rainbow(nper)
+    # print(c(d1,d2))
+    cols=rainbow_hcl(nper, start = 10, end = 275,c=100,l=70)
     ylabs=paste0('theta[',1:nper,']')
     for(i in 1:nper)
     {
@@ -42,7 +47,7 @@ JGQD.plot=function(x,thin=1,burns,h=FALSE)
         hist(par.matrix[i,tt],col=cols[i],main=ylabs[i],freq=F)
       }else
       {
-        plot(prop.matrix[i,tt]~tt,col='gray80',type='s',main=ylabs[i],xlab='Iteration',ylab='')
+        plot(prop.matrix[i,tt]~tt,col='gray90',type='s',main=ylabs[i],xlab='Iteration',ylab='')
         lines(par.matrix[i,tt]~tt,col=cols[i],type='s')
         abline(v=1,lty='dotdash')
       }
@@ -66,7 +71,7 @@ JGQD.plot=function(x,thin=1,burns,h=FALSE)
     if(requireNamespace('rgl', quietly = TRUE))
     {
       open3d(windowRect=c(50,50,640+50,50+640),zoom=0.95)
-      persp3d(x=x$Xt,y=x$time,z=x$density,col=3,box=F,xlab='State (X_t)',ylab='Time (t)',zlab='Density f(X_t|X_s)')
+      persp3d(x=x$Xt,y=x$time,z=x$density,col=3,box=FALSE,xlab='State (X_t)',ylab='Time (t)',zlab='Density f(X_t|X_s)')
      # play3d(spin3d(axis=c(0,0,1), rpm=3), duration=10)
     }else
     {

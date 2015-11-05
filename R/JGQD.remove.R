@@ -1,13 +1,16 @@
 JGQD.remove <-
 function()
 {
-   namess=c('G0','G1','G2','Q0','Q1','Q2','a00','a10','a20','a01','a02','a11','Lam','Nu1','Jmu','Jsig','Jbeta',
-             'b00','b10','b20','b01','b02','b11',
-             'c00','c10','c20','c01','c02','c11',
-             'd00','d10','d20','d01','d02','d11',
-             'e00','e10','e20','e01','e02','e11',
-             'f00','f10','f20','f01','f02','f11','priors',
-             'Lam1','Lam2','Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Nu1x','Nu2x','Nu1y','Nu2y','MU1','MU2','SIG11','SIG12','SIG22')
+   namess=c('G0','G1','G2','Q0','Q1','Q2','Lam0','Lam1','Lam2',
+            'Jmu','Jsig','Jlam','Jalpha','Jbeta','Ja','Jb',
+            'a00','a10','a20','a01','a02','a11',
+            'b00','b10','b20','b01','b02','b11',
+            'c00','c10','c20','c01','c02','c11',
+            'd00','d10','d20','d01','d02','d11',
+            'e00','e10','e20','e01','e02','e11',
+            'f00','f10','f20','f01','f02','f11','priors',
+            'Lam00','Lam10','Lam01','Jmu1','Jmu2','Jsig11','Jsig12','Jsig22')
+             #'Nmu11','Nsig11','Nmu21','Nsig21','Nmu12','Nsig12','Nmu22','Nsig22','Nu1x','Nu2x','Nu1y','Nu2y')
    func.list=rep(0,length(namess))
    obs=objects(pos=1)
    for(i in 1:length(namess))

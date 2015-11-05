@@ -12,8 +12,7 @@ __DiffusionRjgqd__ is collection of tools for performing inference and analysis 
 __DiffusionRjgqd__ provides a simple interface that requires minimal mathematical input in order to perform analysis on non-linear, time-inhomogeneous diffusion processes. The package also makes use of C++ in order to maximize the computational efficiency of inference routines. As such it is possible to conduct inference on a plethora of models in a desktop environment without incurring excessively long computation times.
 
 ## Get DiffusionRjgqd?
-Check out [DiffusionRjgqd](https://github.com/eta21/DiffusionRjgqd) on GitHub for the package source files and [DiffusionR gqd-Downloads](https://github.com/eta21/DiffusionRjgqd-Downloads) for example scripts and other downloadable content.
-
+Check out [DiffusionRjgqd](https://github.com/eta21/DiffusionRjgqd) for the package source files, vignettes and other downloadable content or visit the [DiffusionRjgqd CRAN page](https://cran.r-project.org/web/packages/DiffusionRjgqd/index.html).
 
 
 # Installation Notes

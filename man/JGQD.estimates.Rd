@@ -19,6 +19,17 @@ Thinnging level for parameter chain.
   \item{burns}{
 Number of MCMC updates to discard before calculating estimates.
 }
+ \item{CI}{
+Credibility interval quantiles (for MCMC chains).
+}
+
+  \item{corrmat}{
+If TRUE, an estimated correlation matrix is returned in addition to the estimate vector.
+}
+  \item{acf.plot}{
+If TRUE, an acf plot is drawn for each element of the parameter chain.
+}
+
 }
 
 \value{
@@ -33,10 +44,7 @@ Updates available on GitHub at \url{https://github.com/eta21}. Visit \url{http:/
 }
 \examples{
 \donttest{
-#===============================================================================
-
-#===============================================================================
-
+example(JGQD.mcmc)
 }
 }
 

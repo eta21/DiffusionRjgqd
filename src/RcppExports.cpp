@@ -6,13 +6,13 @@
 
 using namespace Rcpp;
 
-// junkfunction
-arma::mat junkfunction();
-RcppExport SEXP DiffusionRjgqd_junkfunction() {
+// junkfunction2
+arma::mat junkfunction2();
+RcppExport SEXP DiffusionRjgqd_junkfunction2() {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    __result = Rcpp::wrap(junkfunction());
+    __result = Rcpp::wrap(junkfunction2());
     return __result;
 END_RCPP
 }

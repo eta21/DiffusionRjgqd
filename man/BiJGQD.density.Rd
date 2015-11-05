@@ -4,10 +4,60 @@
 Generate the Transition Density of a Bivariate Jump Generalized Quadratic Diffusion Model (2D JGQD).
 }
 \description{
-\code{BiJGQD.density} generates approximate transitional densities for bivariate generalized quadratic diffusions (GQDs). Given a starting coordinate, (\code{Xs}, \code{Ys}), the approximation is evaluated over a lattice \code{Xt} x \code{Yt} for an equispaced discretization (intervals of width \code{delt}) of the transition time horizon [\code{s}, \code{t}] .
+
+\code{BiJGQD.density} generates approximate transitional densities for bivariate generalized quadratic jump diffusions (JGQDs). Given a starting coordinate, (\code{Xs}, \code{Ys}), the approximation is evaluated over a lattice \code{Xt} x \code{Yt} for an equispaced discretization (intervals of width \code{delt}) of the transition time horizon [\code{s}, \code{t}].
+\if{html}{
+That is, \code{BiJGQD.density} generates approximate transitional densities for a class of bivariate jump diffusion processes with SDE:
+
+\figure{BivJumpDiff1.png}
+
+where
+
+\figure{BivJumpDiff4.png}
+
+\figure{BivJumpDiff3.png}
+
+and
+
+\figure{BivJumpDiff2.png}
+
+describes a bivariate Poisson process with jump matrix:
+
+\figure{BivJumpDiff5.png}
+
+and intensity vector
+
+\figure{BivJumpDiff6.png}
+
+}
+\if{latex}{
+\code{BiJGQD.density()} approximates the transitional density of jump diffusions of the form:
+\deqn{d\mathbf{X}_t = \boldsymbol\mu(\mathbf{X}_t,t)dt +\boldsymbol\sigma(\mathbf{X}_t,t)d\mathbf{W}_t+d\mathbf{P}_t\\}
+where
+\deqn{\mu^{(1)}(\mathbf{X}_t,t)= \sum_{i+j\leq 2}a_{ij}(t)X_t^iY_t^j,\\}
+\deqn{\mu^{(2)}(\mathbf{X}_t,t)= \sum_{i+j\leq 2}b_{ij}(t)X_t^iY_t^j,\\}
+and
+\deqn{\boldsymbol\sigma(X_t,Y_t,t)\boldsymbol\sigma^{\prime}(X_t,Y_t,t) = (\gamma^{(i,j)}(\mathbf{X}_t,t))_{i,j=1,2}\\}
+such that
+\deqn{\gamma^{(1,1)}(\mathbf{X}_t,t)= \sum_{i+j\leq 2}c_{ij}(t)X_t^iY_t^j,\\}
+\deqn{\gamma^{(1,2)}(\mathbf{X}_t,t)= \sum_{i+j\leq 2}d_{ij}(t)X_t^iY_t^j,\\}
+\deqn{\gamma^{(2,1)}(\mathbf{X}_t,t)= \sum_{i+j\leq 2}e_{ij}(t)X_t^iY_t^j,\\}
+\deqn{\gamma^{(2,2)}(\mathbf{X}_t,t)= \sum_{i+j\leq 2}f_{ij}(t)X_t^iY_t^j,\\}
+and \eqn{d\mathbf{P}_t=J(\mathbf{X}_t,t)d\mathbf{N}_t} describes a Poisson process with jump matrix:
+\deqn{\mathbf{J}(\mathbf{X}_t,t,\dot{\mathbf{z}}_t)^{(1,1)}=\dot{z}_{11},\\}
+\deqn{\mathbf{J}(\mathbf{X}_t,t,\dot{\mathbf{z}}_t)^{(2,1)}=\dot{z}_{21},\\}
+if jumps are additive or
+\deqn{\mathbf{J}(\mathbf{X}_t,t,\dot{\mathbf{z}}_t)^{(1,1)}=\dot{z}_{11}X_t,\\}
+\deqn{\mathbf{J}(\mathbf{X}_t,t,\dot{\mathbf{z}}_t)^{(2,1)}=\dot{z}_{21}Y_t,\\}
+if jumps are multiplicative. For purposes of this package the arrival rate is decomposed as:
+\deqn{\lambda(\mathbf{X}_t,t)= \sum_{i+j\leq 1}\lambda_{ij}(t)X_t^iY_t^j\\}
+and
+ \deqn{(\dot{z}_{11},\dot{z}_{21})^\prime \sim \mbox{MVN}(\boldsymbol\mu_J,\boldsymbol\Sigma_J).\\}
+ }
 }
 \usage{
-BiJGQD.density(Xs, Ys, Xt, Yt, s, t, delt, Dtype)
+BiJGQD.density(Xs, Ys, Xt, Yt, s, t, delt, Dtype, Jdist, Jtype, print.output,
+               eval.density)
 }
 \arguments{
   \item{Xt}{x-Coordinates of the lattice at which to evaluate the transition density.}
@@ -18,8 +68,14 @@ BiJGQD.density(Xs, Ys, Xt, Yt, s, t, delt, Dtype)
   \item{t}{Final time at which to evaluate the transition density.}
   \item{delt}{Step size for numerical solution of the cumulant system. Also used for the discretization of the transition time-horizon. See warnings \bold{[1]} and \bold{[2]}.}
   \item{Dtype}{The density approximant to use. Valid types are \code{"Saddlepoint"} (default) or \code{"Edgeworth"}.}
+  \item{Jdist}{Valid entries are 'MVNormal' (currently).}
+  \item{Jtype}{Valid types are 1 or 2.}
+  \item{print.output}{If \code{TRUE} information about the model and algorithm is printed to the console. }
+ \item{eval.density}{If \code{TRUE}, the density is evaluated in addition to calculating the moment eqns.}
 }
 \details{
+
+
 \if{html}{\figure{TransDens2.png}{GQD}}
 
 \code{BiJGQD.density} constructs an approximate transition density for a class of quadratic diffusion models. This is done by first evaluating the trajectory of the cumulants/moments of the diffusion numerically as the solution of a system of ordinary differential equations over a time horizon \code{[s,t]} split into equi-distant points \code{delt} units apart. Subsequently, the resulting cumulants/moments are carried into a density approximant (by default, a saddlepoint approximation) in order to evaluate the transtion surface.
@@ -72,133 +128,60 @@ See \code{\link{BiJGQD.mcmc}} and \code{\link{JGQD.density}}.
 
 \examples{
 \donttest{
-#
- rm(list=ls(all=T))
- a00 = function(t){0.25*5}
- a10 = function(t){-0.25}
- a01 = function(t){0.0}
- c10 = function(t){0.25*0.25}
+#===============================================================================
 
- b00 = function(t){0.25*5}
- b01 = function(t){-0.25}
- b10 = function(t){0}
- f01 = function(t){0.25*0.25}
+# Generate the transitional density of a non-linear bivariate jump diffusion
+ # with a time-inhomogeneous jump distribution.
+ JGQD.remove()
 
- lam1= function(t){2}
- lam2= function(t){2}
+ a00 = function(t){0.5*5}
+ a10 = function(t){-0.5}
+ a01 = function(t){-0.1}
+ c10 = function(t){0.4^2}
 
- Nmu11 = function(t){0.0}  # m
- Nsig11 = function(t){0.5} # m
- Nmu21 = function(t){0.0}  # n
- Nsig21 = function(t){0.0} # n
- Nmu12 = function(t){0.0}  # o
- Nsig12 = function(t){0.0} # o
- Nmu22 = function(t){0.0}  # p
- Nsig22 = function(t){0.5} # p
+ b00 = function(t){0.4*6}
+ b01 = function(t){-0.4}
+ b10 = function(t){-0.1}
+ f01 = function(t){0.3^2}
 
-  xx=seq(2,15,1/10)
-  res= BiJGQD.density(8,8,xx,xx,0,5,1/100,Dtype='Saddlepoint')
+ Lam00= function(t){1}
 
-mux     = function(x,y,t){a00(t)+a10(t)*x+a01(t)*y}
-sigmax  = function(x,y,t){sqrt(c10(t)*x)}
-muy     = function(x,y,t){b00(t)+b10(t)*x+b01(t)*y}
-sigmay  = function(x,y,t){sqrt(f01(t)*y)}
-lambda1 = function(x,y,l){lam1(0)}
-lambda2 = function(x,y,l){lam2(0)}
+ Jmu1=function(t){0.75*(1+sin(2*pi*t))}
+ Jmu2=function(t){0.75*(1+sin(2*pi*t))}
+ Jsig11=function(t){0.75^2*(1+0.8*sin(2*pi*t))^2}
+ Jsig22=function(t){0.75^2*(1+0.8*sin(2*pi*t))^2}
 
-j11     = function(x,y,z){z}
-j12     = function(x,y,z){z}
-j21     = function(x,y,z){z}
-j22     = function(x,y,z){z}
+ xx=seq(3,11,1/10)
+ yy=seq(3,11,1/10)
+ res= BiJGQD.density(7,7,xx,yy,0,1,1/100,Dtype='Saddlepoint')
 
-
-simulate=function(x0=8,y0=8,N=1000)
-{
-  d=0
-  delta=1/100
-  tt=seq(0,5,delta)
-  X=rep(x0,N)
-  Y=rep(y0,N)
-
-  kkk=1
-  MM= matrix(0,14,length(tt))
-
-  xtrak = rep(x0,length(tt))
-  ytrak = rep(x0,length(tt))
-
-  jtrakx = rep(0,length(tt))
-  jtraky = rep(0,length(tt))
-
-  for(i in 2:length(tt))
-  {
-    X=X+mux(X,Y,d)*delta+sigmax(X,Y,d)*rnorm(N,sd=sqrt(delta))
-    Y=Y+muy(X,Y,d)*delta+sigmay(X,Y,d)*rnorm(N,sd=sqrt(delta))
-
-    d=d+delta
-
-    xpre=X[1]
-    ypre=Y[1]
-    events1 = (lambda1(X,Y,0)*delta>runif(N))
-    if(any(events1))
-    {
-      wh=which(events1)
-      X[wh]=X[wh]+j11(X[wh],Y[wh],rnorm(length(wh),Nmu11(d),Nsig11(d)))
-      Y[wh]=Y[wh]+j21(X[wh],Y[wh],rnorm(length(wh),Nmu21(d),Nsig21(d)))
-    }
-    events2 = (lambda2(X,Y,0)*delta>runif(N))
-    if(any(events2))
-    {
-      wh=which(events2)
-      X[wh]=X[wh]+j12(X[wh],Y[wh],rnorm(length(wh),Nmu12(d),Nsig12(d)))
-      Y[wh]=Y[wh]+j22(X[wh],Y[wh],rnorm(length(wh),Nmu22(d),Nsig22(d)))
-    }
-
-    jtrakx[i] = X[1]-xpre
-    xtrak[i]  = X[1]
-    jtraky[i] = Y[1]-ypre
-    ytrak[i]  = Y[1]
-
-    MM[1,i] =sum(X)/N
-    MM[2,i] =sum(X^2)/N
-    MM[3,i] =sum(X^3)/N
-    MM[4,i] =sum(X^4)/N
-    MM[5,i] =sum(Y)/N
-    MM[6,i] =sum(Y^2)/N
-    MM[7,i] =sum(Y^3)/N
-    MM[8,i] =sum(Y^4)/N
-    MM[9,i] =sum(X^1*Y^1)/N
-    MM[10,i]=sum(X^1*Y^2)/N
-    MM[11,i]=sum(X^2*Y^1)/N
-    MM[12,i]=sum(X^2*Y^2)/N
-    MM[13,i]=sum(X^3*Y^1)/N
-    MM[14,i]=sum(X^1*Y^3)/N
-
-  filled.contour(res$Xt,res$Yt,res$density[,,i],
-  main=paste0('Transition Density \n (t = ',res$time[i],')'),
-  color.palette=colorRampPalette(c('white','green','blue','red'))
-  ,xlab='Prey',ylab='Preditor',plot.axes=
+ # Plot the transitional denisty at various points in time:
+ library(colorspace)
+ colpal=function(n){rev(sequential_hcl(n,power=0.8,l=c(40,100)))}
+ pts=c(0.13,0.28,0.38,0.51,0.63,0.75)
+ for(i in 1:length(pts))
+ {
+  filled.contour(res$Xt,res$Yt,res$density[,,pts[i]*100],
+   main=paste0('Transition Density \n (t = ',round(pts[i],2),')'),
+   color.palette=colpal, nlevels=41,xlab=expression(X[t]),
+   ylab=expression(Y[t]),plot.axes=
    {
-     # Add simulated trajectories
-     points(Y~X,pch=20,col='grey47',cex=0.01)
-
-     points(res$moments[5,i]~res$moments[1,i],bg='white',pch=21,cex=1.5)
-     axis(1);axis(2);
-     points(mean(Y)~mean(X),pch=20,col='pink',cex=1)
-     # Add a legend
-     legend('topright',lty=c('solid',NA,NA),col=c('grey57','grey47','black'),
-             pch=c(NA,20,21),legend=c('Simulated Expectation','Simulated Trajectories'
-             ,'Predicted Expectation'))
+    axis(1);axis(2)
+    yy=contourLines(res$Xt,res$Yt,res$density[,,pts[i]*100],
+                    levels=seq(0.01,0.1,length=10))
+    if(length(yy)>0)
+    {
+      for(j in 1:length(yy))
+      {
+       lines(yy[[j]])
+      }
+    }
    })
-  }
-  return(list(MM=MM,tt=tt,X=X,Y=Y,xtrak=xtrak,ytrak=ytrak,jtrakx=jtrakx,jtraky=jtraky))
-}
-
-x11()
-par(ask=F)
-res=simulate()
+ }
 
 
 #===============================================================================
 }
 }
-
+\keyword{ Transition density }
+\keyword{ Moments }

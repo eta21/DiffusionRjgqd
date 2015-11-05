@@ -2,19 +2,34 @@
 \alias{JSDEsim1}
 \docType{data}
 \title{
-Simulated Jump Diffusion
+Simulated Trajectory of a Scalar Jump Diffusion.
 }
 \description{
-Simulated Jump Diffusion
+Simulated trajectory of a scalar jump diffusion with Laplace distributed jumps ariving with stochastic intensity.
+\if{latex}{The dynamics of the process is given by the jump SDE:
+\deqn{dX_t = (5-X_t)dt+0.25\sqrt{X_t}dB_t+dP_t\\}
+where \eqn{dP_t=\dot{z}_tdN_t} describes a Poisson process with intensity:
+\deqn{\lambda(X_t) = 0.5X_t\\}
+and
+\deqn{\dot{z}\sim\mbox{Laplace}(0.5,1)\\}}
+
+\if{html}{
+ The dynamics of the process is given by the jump SDE:
+
+ \figure{JSDEsim1.png}{jeqn}
+}
+
 }
 \usage{data("JSDEsim1")}
 \format{
-  A data frame with 1001 observations on the following 3 variables.
+  A data frame with 251 observations on the following 2 variables.
   \describe{
-    \item{\code{X_t}}{a numeric vector}
-    \item{\code{Y_t}}{a numeric vector}
-    \item{\code{time}}{a numeric vector}
+    \item{\code{Xt}}{Observed trajectory.}
+    \item{\code{time}}{Time index for the observed trajectory}
   }
 }
 
+\examples{
+data(JSDEsim1)
+}
 \keyword{datasets}

@@ -4,7 +4,7 @@
 \title{
 Remove the Coefficients of a JGQD Model.
 }
-\description{Removes any existing coefficient functions from the current workspace. 
+\description{Removes any existing coefficient functions from the current workspace.
 }
 \usage{
 JGQD.remove()
@@ -31,6 +31,6 @@ Etienne A.D. Pienaar: \email{etiennead@gmail.com}
 \seealso{
 \code{\link{JGQD.density}} and \code{\link{BiJGQD.density}}.
 }
-\keyword{Remove models}
+\keyword{remove models}
 
 

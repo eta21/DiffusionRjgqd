@@ -8,27 +8,48 @@ MCMC Inference on Jump Generalized Quadratic Diffusion Models (JGQDs).
 \code{JGQD.mcmc()} uses parametrised coefficients (provided by the user as R-functions) to construct a C++ program in real time that allows the user to perform Bayesian inference on the resulting jump diffusion model. Given a set of starting parameters, a MCMC chain is returned for further analysis.
 The structure of the model is predefined and coefficients may be provided for models nested within the generalized quadratic diffusion framework.
 \if{html}{
- \code{JGQD.mcmc()} approximates transitional densities of jump diffusions of the form:
+ \code{JGQD.mcmc()} performs inference using the Metropolis-Hastings algorithm for jump diffusions of the form:
 
- \figure{JGQDeqn1.png}{JGQD}
+ \figure{ScalarEqn1.png}
+
+ where
+
+ \figure{ScalarEqn2.png}
+
+  \figure{ScalarEqn3.png}
+
+  and
+
+   \figure{ScalarEqn4.png}
+
+  describes a Poisson process with jumps of the form:
+
+   \figure{ScalarEqn6.png}
+
+  arriving with intensity
+
+   \figure{ScalarEqn5.png}
+
+  subject to a jump distribition of the form:
+
+  \figure{ScalarEqn7.png}
+
  }
- \if{latex}{
- \code{JGQD.mcmc()} supports jump diffusions of the form:
- \deqn{dX_t = \mu_{\theta}(X,t)dt +\sigma_{\theta}(X_t,t)dW_t+dP_t\\}
- with drift
- \deqn{\mu_{\theta}(X,t) = G_0(t,\theta)+G_1(t,\theta)X_t+G_2(t,\theta)X_t^2\\}
- and diffusion
- \deqn{\sigma_{\theta}(X,t)=\sqrt{Q_0(t,\theta)+Q_1(t,\theta)X_t+Q_2(t,\theta)X_t^2}\\}
- where \eqn{dP_t=j_{\theta}(X_t,\dot{z}_t)dN_t} is a Poisson process with intensity
- \deqn{\lambda_{\theta}(X,t)={\lambda_0(t,\theta)+\lambda_1(t,\theta)X_t+\lambda_2(t,\theta)X_t^2},\\}
- jump coefficient:
- \deqn{j_{\theta}(X_t,\dot{z}_t) = \dot{z}_t} or \deqn{j_{\theta}(X_t,\dot{z}_t) = \dot{z}_tX_t\\ }
- and
+\if{latex}{
+\code{JGQD.mcmc()} performs inference using the Metropolis-Hastings algorithm for jump diffusions of the form:
+\deqn{dX_t = \mu(X,t)dt +\sigma(X_t,t)dW_t+dP_t\\}
+where
+\deqn{\mu(X,t) = G_0(t,\theta)+G_1(t,\theta)X_t+G_2(t,\theta)X_t^2,\\}
+\deqn{\sigma(X,t)=\sqrt{Q_0(t,\theta)+Q_1(t,\theta)X_t+Q_2(t,\theta)X_t^2,}\\}
+and \eqn{dP_t=j(X_t,\dot{z}_t)dN_t} describes a Poisson process with intensity:
+\deqn{\lambda(X,t)={\lambda_0(t,\theta)+\lambda_1(t,\theta)X_t+\lambda_2(t,\theta)X_t^2},\\}
+jump coefficient
+\deqn{j(X_t,\dot{z}_t) = \dot{z}_t} or \deqn{j(X_t,\dot{z}_t) = \dot{z}_tX_t\\ }
+and
 \deqn{\dot{z}_t\sim\mbox{Normal}(\mu_J(t,\theta),\sigma_J^2(t,\theta)),\\}
 \deqn{\dot{z}_t\sim\mbox{Exponential}(\lambda_J(t,\theta)),\\}
 \deqn{\dot{z}_t\sim\mbox{Gamma}(\alpha_J(t,\theta),\beta_J(t,\theta)),\\}
 or
-
 \deqn{\dot{z}_t\sim\mbox{Laplace}(a_J(t,\theta),b_J(t,\theta)).\\}
  }
 
@@ -37,7 +58,7 @@ or
 JGQD.mcmc(X, time, mesh = 10, theta, sds, updates = 1000,
           burns = min(round(updates/2), 25000), Jtype = "Add", Jdist = "Normal",
           Dtype = "Saddlepoint", RK.order = 4, exclude = NULL, plot.chain = TRUE,
-          wrt = TRUE, Tag = NA, factorize = TRUE, print.output = TRUE)
+          wrt = FALSE, Tag = NA, factorize = TRUE, print.output = TRUE)
 }
 
 \arguments{
@@ -118,7 +139,7 @@ Etienne A.D. Pienaar: \email{etiennead@gmail.com}
 }
 
 \section{Syntactical jargon}{
-\bold{Synt. [1]:} The coefficients of the 2D JGQD may be parameterized using the reserved variable \code{theta}. For example:
+\bold{Synt. [1]:} The coefficients of the JGQD may be parameterized using the reserved variable \code{theta}. For example:
 
 \code{G0 <- function(t){theta[1]*(theta[2]+sin(2*pi*(t-theta[3])))}}.
 
@@ -142,13 +163,19 @@ Here sqrt(t)*cos(3*pi*t) constitutes the product of two terms that cannot be wri
 
 \examples{
 \donttest{
+
 #===============================================================================
+
+ # For detailed notes and examples on how to use the JGQD.mcmc() function, see
+ # the following vignette:
+
+ RShowDoc('Part_4_Likelihood_Inference',type='html','DiffusionRjgqd')
 
 #===============================================================================
 }
 }
-\keyword{Syntax}
+\keyword{syntax}
 \keyword{C++}
-\keyword{MCMC}
+\keyword{mcmc}
 
 
