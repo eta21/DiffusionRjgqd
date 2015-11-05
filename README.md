@@ -2,6 +2,7 @@
 # DiffusionRjgqd
 Inference and Analysis for Generalized Quadratic Jump Diffusions
 
+<<<<<<< HEAD
 ## What is DiffusionRjgqd?
 __DiffusionRjgqd__ is collection of tools for performing inference and analysis on scalar and bivariate time-inhomogeneous jump diffusion processes with quadratic drift and diffusion terms in R. 
 
@@ -10,6 +11,16 @@ __DiffusionRjgqd__ provides a simple interface that requires minimal mathematica
 
 ## Get DiffusionRjgqd?
 Check out [DiffusionRjgqd](https://github.com/eta21/DiffusionRjgqd) on GitHub for the package source files and [DiffusionR gqd-Downloads](https://github.com/eta21/DiffusionRjgqd-Downloads) for example scripts and other downloadable content.
+=======
+## What is DiffusionRgqd?
+__DiffusionRjgqd__ is collection of tools for performing inference and analysis on scalar and bivariate time-inhomogeneous diffusion processes with quadratic drift and diffusion terms in R.
+
+## Why use DiffusionRgqd?
+__DiffusionRjgqd__ provides a simple interface that requires minimal mathematical input in order to perform analysis on non-linear, time-inhomogeneous diffusion processes. The package also makes use of C++ in order to maximize the computational efficiency of inference routines. As such it is possible to conduct inference on a plethora of models in a desktop environment without incurring excessively long computation times.
+
+## Get DiffusionRjgqd?
+Check out [DiffusionRgqd](https://github.com/eta21/DiffusionRjgqd) on GitHub for the package source files and [DiffusionRgqd-Downloads](https://github.com/eta21/DiffusionRjgqd-Downloads) for example scripts and other downloadable content.
+>>>>>>> e0fcc42f9eaa8070e2b80a174a29e24982c24de4
 
 
 # Installation Notes
