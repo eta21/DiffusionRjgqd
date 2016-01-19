@@ -17,7 +17,7 @@ JGQD.remove()
 No value is returned.
 }
 \references{
-Updates available on GitHub at \url{https://github.com/eta21}. Visit \url{http://etiennead.wix.com/diffusionr} for more details on the DiffusionRjgqd package.
+Updates available on GitHub at \url{https://github.com/eta21}.
 }
 \author{
 Etienne A.D. Pienaar: \email{etiennead@gmail.com}

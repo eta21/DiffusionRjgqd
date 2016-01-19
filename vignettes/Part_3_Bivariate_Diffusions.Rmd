@@ -259,7 +259,6 @@ aggregate', resulting in a more homogeneous distribution.
 
 # Further reading
 * [Methodology paper](DiffusionRjgqd_Paper.pdf) and [replication materials](DiffusionRjgqd_RepMaterials.html).
-* [Package manual](https://cran.r-project.org/web/packages/DiffusionRjgqd/DiffusionRjgqd.pdf)
 * Related packages:
     + [__DiffusionRgqd__](https://cran.r-project.org/web/packages/DiffusionRgqd/index.html)
 * More Vignettes:

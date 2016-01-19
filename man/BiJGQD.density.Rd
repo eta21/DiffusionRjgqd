@@ -88,7 +88,7 @@ BiJGQD.density(Xs, Ys, Xt, Yt, s, t, delt, Dtype, Jdist, Jtype, print.output,
   \item{cumulants}{A matrix giving the cumulants of the diffusion. Cumulants are indicated by row-names.}
   }
 \references{
-Updates available on GitHub at \url{https://github.com/eta21}. Visit \url{http://etiennead.wix.com/diffusionr} for more details on the DiffusionRjgqd package.
+Updates available on GitHub at \url{https://github.com/eta21}.
 
 Daniels, H.E. 1954 Saddlepoint approximations in statistics. \emph{Ann. Math. Stat.}, \bold{25}:631--650.
 

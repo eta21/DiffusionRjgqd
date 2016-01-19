@@ -7,7 +7,8 @@ Extract Parmaeter Estimates from \code{.mle()} or \code{.mcmc()} Objects.
 \code{JGQD.estimates()} calculates parameter estimates from \code{.mle()} or \code{.mcmc()} model objects.
 }
 \usage{
-JGQD.estimates(x, thin = 100, burns)
+JGQD.estimates(x, thin = 100, burns, CI = c(0.05, 0.95), corrmat =
+                 FALSE, acf.plot = TRUE)
 }
 
 \arguments{
@@ -40,7 +41,7 @@ Data frame with parameter estimates and appropriate interval statistics.
 Etienne A.D. Pienaar: \email{etiannead@gmail.com}
 }
 \references{
-Updates available on GitHub at \url{https://github.com/eta21}. Visit \url{http://etiennead.wix.com/diffusionr} for more details on the DiffusionRjgqd package.
+Updates available on GitHub at \url{https://github.com/eta21}.
 }
 \examples{
 \donttest{
