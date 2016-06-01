@@ -1,30 +1,29 @@
-
 ---
-title: "Generating Transition Densities of Generalized Quadratic Diffusion Processes"
+title: "Generating Transition Densities of Generalized Quadratic Jump Diffusion Processes"
 author: "Etienne A.D. Pienaar"
-date: "December, 2015"
+date: "February, 2016"
+bibliography: bibliography.bib
 output:
   html_document:
     fig_width:  6
     fig_height: 6
-    keep_md: yes
     toc: yes
   pdf_document:
     toc: yes
 vignette: >
-  %\VignetteIndexEntry{Part 2: Generating Transition Densities of Generalized Quadratic Diffusion Processes}
+  %\VignetteIndexEntry{Part 2: Generating Transition Densities of Generalized Quadratic Jump Diffusion Processes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 # Transitional densities of jump diffusion processes
 ## Moment equations for quadratic jump diffusions
-__DiffusionRjgqd__ is built around an algorithm that approximates solutions to the Kolmogorov forward eqn
+__DiffusionRjgqd__ is built around an algorithm that approximates solutions to the Kolmogorov forward equation [@Hanson2007applied]:
 \[
 \begin{aligned}
-\frac{\partial}{\partial t} f(X_t|X_s) =& -\frac{\partial}{\partial X_t} [\mu(X_t,t) f(X_t|X_s)]+\frac{1}{2}\frac{\partial^2}{\partial X_t^2} [\sigma^2(X_t,t) f(X_t|X_s)]\\ &+\int\lambda(X_t-J(X_t,\dot{z}_t))f(X_t-J(X_t,\dot{z}_t)|X_s)d\phi(\dot{z}_t)d\dot{z}_t\\
+\frac{\partial}{\partial t} f(X_t|X_s) =& -\frac{\partial}{\partial X_t} [\mu(X_t,t) f(X_t|X_s)]+\frac{1}{2}\frac{\partial^2}{\partial X_t^2} [\sigma^2(X_t,t) f(X_t|X_s)]\\ &+\int\lambda(\nabla(X_t+J(X_t,\dot{z}_t)))f(\nabla(X_t+J(X_t,\dot{z}_t))|X_s)|\delta(\dot{z}_t)|d\phi(\dot{z}_t)d\dot{z}_t\\
 &-\int\lambda(X_t)f(X_t|X_s)d\phi(\dot{z}_t)d\dot{z}_t, 
 \end{aligned}\]
-where $\phi(.)$ gives the jump distribution, which governs the transitional densities of jump diffusion processes. This is achieved by calculating the conditional moment trajectories of a diffusion process over time and subsequently carrying these moments into a suitable surrogate density. 
+where $\phi(.)$ gives the jump distribution and the elements $\nabla(X_t+J(X_t,\dot{z}_t))$ and $|\delta(\dot{z}_t)|$ have special meaning. Here, $\nabla(X_t+J(X_t,\dot{z}_t))$ has the effect of mapping the jumps $J(X_t,\dot{z}_t)$ in such a way that the state $X_t$ is reached as the result of a jump. For example, if $J(X_t,\dot{z}_t) = \dot{z}_t$ then  $\nabla(X_t+J(X_t,\dot{z}_t)) = X_t -\dot{z}_t$. The function $\nabla(.)$ thus reverts the state of the process to that which it would have been prior to a jump occurance. The element $|\delta(\dot{z}_t)|$ on the other hand is simply the Jacobian corresponding to the function $\nabla(.)$. For example, if $J(X_t,\dot{z}_t) = \dot{z}_t$ and  $\nabla(X_t+J(X_t,\dot{z}_t)) = X_t -\dot{z}_t$, then $|\delta(\dot{z}_t)| =1$. The approximation is based on calculating the conditional moment trajectories of a diffusion process over time and subsequently carrying these moments into a suitable surrogate density. The surrogate density is then used to approximate the solution to the Kolmogorov equation. 
 
 For example, given a scalar generalized quadratic diffusion:
 
@@ -42,12 +41,12 @@ Let $m_i(t)$ denote the $i$-th cumulant of $X_t$ given that the process assumes 
 
 \[
 \begin{aligned}
-\frac{\partial}{\partial t} m_i(t) &= i\bigg(\sum_{k=0}^{2}g_k(t)m_{i+k-1}(t)\bigg)\\                        &+\frac{i(i-1)}{2}\bigg(\sum_{k=0}^{2}q_k(t)m_{i+k-2}(t)\bigg)\mathbb{I}_{i\geq 2}\\
+\frac{\partial}{\partial t} m_i(t) &= i\bigg(\sum_{k=0}^{2}G_k(t)m_{i+k-1}(t)\bigg)\\                        &+\frac{i(i-1)}{2}\bigg(\sum_{k=0}^{2}Q_k(t)m_{i+k-2}(t)\bigg)\mathbb{I}_{i\geq 2}\\
 &+\lambda_0(t)\bigg(\sum_{k=0}^i {i\choose k}m_k(t) u_{i-k}-m_i(t) \bigg)\\
-&+\sum_{l=1}^2\lambda_l(t)\bigg(\sum_{k=0}^i {i\choose k}m_{k+l-1}(t) u_{i-k+l}^{(0)}(t)-m_{i+l-1}(t) \bigg),\\
+&+\sum_{l=1}^2\lambda_l(t)\bigg(\sum_{k=0}^i {i\choose k}m_{k+l-1}(t) u_{i-k+l}(t)-m_{i+l-1}(t) \bigg),\\
 \end{aligned}
 \]
-subject to the initial conditions $m_i(t) = X_t^i$  for $i = 1,2,\ldots$, where $u_{i}^{(0)}$ denotes the $i$-th non-central moment of the random variable $\dot{z}_t$. By solving these equations numerically via standard Runge-Kutta schemes and plugging the resulting values into a  surrogate density such as a Normal distribution or a saddlepoint approximation, it is possible to accurately approximate the transitional density.
+subject to the initial conditions $m_i(s) = X_s^i$ for $s<t$ and $i = 1,2,\ldots$, where $u_{i}$ denotes the $i$-th non-central moment of the random variable $\dot{z}_t$. By solving these equations numerically via standard Runge-Kutta schemes and plugging the resulting values into a  surrogate density such as a Normal distribution or a saddlepoint approximation, it is possible to accurately approximate the transitional density.
 
 ## An excess-factorization for the transitional density
 
@@ -56,7 +55,7 @@ Due to the dichotomous nature of jump diffusion processes a subtlety arises when
 f_J(X_t|X_s) = P(N_t-N_s=0) f_{D}(X_t|X_s) +P(N_t-N_s>0)f_{E}(X_t|X_s)
 \]
 
-where $f_J(X_t|X_s)$ denotes the transitional density of the jump diffusion, $f_D(X_t|X_s)$ denotes the purely diffuse counterpart to the jump diffusion and $f_E(X_t|X_s)$ denotes an excess distribution, and $P(N_t-N_s=0)$ is calculated as the solution to the equation:
+where $f_J(X_t|X_s)$ denotes the transitional density of the jump diffusion, $f_D(X_t|X_s)$ denotes the jump free counterpart to the jump diffusion and $f_E(X_t|X_s)$ denotes an excess distribution, and $P(N_t-N_s=0)$ is calculated as the solution to the equation:
 
 \[\frac{\partial}{\partial t} \log(P(N_t-N_s = 0)) = -\int \lambda(x,t)f_D(x|X_s)dx,\]
 
@@ -69,7 +68,7 @@ In order to approximate the transitional density, the moments of $f_J(X_t|X_s)$ 
 
 # Non-linear jump diffusions
 ## The basic affine jump diffusion
-An example pf non-linear jump diffusion model often used in finance, termed the [``basic affine jump diffusion'' (BAJD)](https://en.wikipedia.org/wiki/Basic_affine_jump_diffusion) (Eckner 2009) extends upon the popular [CIR process](https://en.wikipedia.org/wiki/Cox-Ingersoll-Ross_model) by assuming that the paths of the process undergoes exponentially distributed jumps that occur with constant intesity. Thus, the corresponding SDE is given by the system:
+An example of non-linear jump diffusion model often used in finance, termed the [``basic affine jump diffusion'' (BAJD)](https://en.wikipedia.org/wiki/Basic_affine_jump_diffusion) [@Eckner2009computational] extends upon the popular [CIR process](https://en.wikipedia.org/wiki/Cox-Ingersoll-Ross_model) by assuming that the paths of the process undergoes exponentially distributed jumps that occur with constant intensity. Thus, the corresponding SDE is given by the system:
 
 \[
 \begin{aligned}
@@ -106,7 +105,7 @@ Subsequently, we can approximate the transition density over a fixed transition 
 
  M <- JGQD.density(Xs,Xt,s,t,dt, Jdist = 'Exponential', factorize = TRUE)
 
- persp(x=M$Xt,y=M$time,z=M$density,col='green',xlab='State (X_t)',ylab='Time (t)',
+ persp(x=M$Xt,y=M$time,z=M$density,col='white',xlab='State (X_t)',ylab='Time (t)',
       zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145)
 ```
 Interestingly, the transitional density of the BAJD appears to be superficially very similar to that of a CIR process. However, as will be seen in the examples that follow, the presence of the jump mechanism significantly affects the nature of the transition density. 
@@ -153,9 +152,9 @@ Subsequently, by supplying initial values and the perimeters of the space on whi
 
  M <- JGQD.density(Xs,Xt,s,t,dt, Jdist = 'Normal')
 
- persp(x=M$Xt,y=M$time,z=M$density,col='green',xlab='State (X_t)',ylab='Time (t)', zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145)
+ persp(x=M$Xt,y=M$time,z=M$density,col='white',xlab='State (X_t)',ylab='Time (t)', zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145)
 ```
-Note that, since the transition horizon is large we have not specified that the excess factorization need be used. If we wish to envoke the excess factorization we can specify this through the `factorize` parameter:
+Note that, since the transition horizon is large we have not specified that the excess factorization need be used. If we wish to invoke the excess factorization we can specify this through the `factorize` parameter:
 ```{r fig.align = 'center'}
  Xt <- seq(5.5,8,1/50)
  t  <- 0.2
@@ -170,7 +169,7 @@ Note that, since the transition horizon is large we have not specified that the 
  # Superimpose the short horizon on the probability trajectory:
  abline(v=t,lty='dotted')
 ```
-Note the skew shape of the transitional density due to the presence of the jump mechanism. On short transition horizons, the jump mechanism has a significant effect on the nature of the transitional density: More often than not the transitional denity will be multimodal and/or exhibit heavy tails. As such it is imperitive that the excess factorization be used when approximating the transitional density on short transition horizons using the moment truncation methodology. For example, compare the jump diffusion transitional density to that of its purely diffuse counterpart:
+Note the skew shape of the transitional density due to the presence of the jump mechanism. On short transition horizons, the jump mechanism has a significant effect on the nature of the transitional density: More often than not the transitional density will be multimodal and/or exhibit heavy tails. As such it is imperative that the excess factorization be used when approximating the transitional density on short transition horizons using the moment truncation methodology. For example, compare the jump diffusion transitional density to that of its purely diffuse counterpart:
 
 
 ```{r fig.align= 'center'}
@@ -217,7 +216,7 @@ For this example we let $\boldsymbol\theta = \{2,5,2,1,1,0.25\}$, $\boldsymbol\l
 Since the intensity process now depends on an external process we need to modify the Kolmogorov forward eqn slightly:
 \[
 \begin{aligned}
-\frac{\partial}{\partial t} f(X_t|X_s) =& -\frac{\partial}{\partial X_t} [\mu(X_t,t) f(X_t|X_s)]+\frac{1}{2}\frac{\partial^2}{\partial X_t^2} [\sigma^2(X_t,t) f(X_t|X_s)]\\ &+\int\int\lambda(X_t-J(X_t,\dot{z}_t),\dot{y}_t)f(X_t-J(X_t,\dot{z}_t)|X_s)d\phi(\dot{z}_t)d\pi(\dot{y}_t)d\dot{z}_td\dot{y}_t-\int\int\lambda(X_t,\dot{y}_t)f(X_t|X_s)d\phi(\dot{z}_t)d\pi(\dot{y}_t)d\dot{z}_td\dot{y}_t. 
+\frac{\partial}{\partial t} f(X_t|X_s) =& -\frac{\partial}{\partial X_t} [\mu(X_t,t) f(X_t|X_s)]+\frac{1}{2}\frac{\partial^2}{\partial X_t^2} [\sigma^2(X_t,t) f(X_t|X_s)]\\ &+\int\int\lambda(X_t-\dot{z}_t,\dot{y}_t)f(X_t-\dot{z}_t|X_s)d\phi(\dot{z}_t)d\pi(\dot{y}_t)d\dot{z}_td\dot{y}_t-\int\int\lambda(X_t,\dot{y}_t)f(X_t|X_s)d\phi(\dot{z}_t)d\pi(\dot{y}_t)d\dot{z}_td\dot{y}_t. 
 \end{aligned}\]
 
 From this, it can be shown that in order to evaluate the moment equations for this process, we require the evolution of the expectation of the intensity process over time. For the present example an analytical expression for the expectation of the intensity parameter assumes the form:
@@ -251,7 +250,7 @@ plot(Lam0(t)~t,type='l')
 TT  <- 5
 res <- JGQD.density(4,seq(2,14,1/10),0,TT,1/100)
 ```
-For comparitive purposes we may compare simulated trajectories of the moments of the process and compare the simulated trajectory of the transitional density to that of the approximation. This can be achieved using a (somewhat oversimplified) simulation algorithm:
+For comparative purposes we may compare simulated trajectories of the moments of the process and compare the simulated trajectory of the transitional density to that of the approximation. This can be achieved using a (somewhat oversimplified) simulation algorithm:
 
 ```{r}
 #' Now simulate the jump diffusion
@@ -351,13 +350,13 @@ Subsequently, we can have a look at what a typical trajectory for such a process
  {
   plot(res2$MM[i,]~res2$tt,type='l',main='Moment trajectory',xlab='Time (t)',
        ylab=paste0('m_',i,'(t)'))
-  lines(res$moments[i,]~res$time,lty='dashed',col='red',lwd=2)
+  lines(res$moments[i,]~res$time,lty='dashed',col='blue',lwd=2)
  }
 ```
 Finally we can compare the simulated transitional density to that of the simulated process:
 
 ```{r fig.align='center'}
- persp(x=res$Xt,y=res$time,z=res$density,col='green',xlab='State (X_t)',ylab='Time (t)', zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145)
+ persp(x=res$Xt,y=res$time,z=res$density,col='white',xlab='State (X_t)',ylab='Time (t)', zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145)
  
  par(mfrow=c(2,2))
  for(i in 1:4)
@@ -369,7 +368,7 @@ Finally we can compare the simulated transitional density to that of the simulat
  }
 ```
 
-Now, we can do a similar experiment over a short transition horizon. For purposes of the comparison we will shhrink the diffusion parameter a bit in order to exaggerate the effect of the jump mecanism:
+Now, we can do a similar experiment over a short transition horizon. For purposes of the comparison we will shrink the diffusion parameter a bit in order to exaggerate the effect of the jump mechanism:
 
 ```{r fig.align='center'}
 # Shrink the diffusion coefficient:
@@ -382,7 +381,7 @@ res <- JGQD.density(4,seq(2,8,1/10),0,TT,1/100, factorize = TRUE)
 # Re-simulate and record histograms at new points:
 res2 <- simulate(pts=seq(0.1,0.4,0.1))
 
-persp(x=res$Xt,y=res$time,z=res$density,col='green',xlab='State (X_t)',ylab='Time (t)', zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145)
+persp(x=res$Xt,y=res$time,z=res$density,col='white',xlab='State (X_t)',ylab='Time (t)', zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145)
 
 par(mfrow=c(2,2))
 for(i in 1:4)
@@ -396,17 +395,10 @@ for(i in 1:4)
 
 --------
 
-# References
-
-Eckner, A. (2009). ``Computational techniques for basic affine models of portfolio credit risk''.
-*Journal of Computational Finance*, __13__(1):63.
-
---------
-
 # Further reading
 * [Methodology paper](DiffusionRjgqd_Paper.pdf) and [replication materials](DiffusionRjgqd_RepMaterials.html).
 * Related packages:
-    + [__DiffusionRgqd__](https://cran.r-project.org/web/packages/DiffusionRgqd/index.html)
+    + [__DiffusionRgqd__](https://cran.r-project.org/package=DiffusionRgqd)
 * More Vignettes:
     + [Introduction](Part_1_Introduction.html)
     + [Transitional densities](Part_2_Transition_Densities.html)
@@ -416,4 +408,10 @@ Eckner, A. (2009). ``Computational techniques for basic affine models of portfol
 ```{r,eval=FALSE}
 browseVignettes('DiffusionRjgqd')
 ```
+
+
+--------
+
+# References
+
 

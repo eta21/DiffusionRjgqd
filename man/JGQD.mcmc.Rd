@@ -95,6 +95,8 @@ The number of updates to burn. That is, the first \code{burns} values are omitte
 \item{Jtype}{Valid types are 'Add' or 'Mult'.}
 \item{factorize}{Should factorization be used (default = TRUE).}
 \item{print.output}{If \code{TRUE}, model information is printed to the console.}
+\item{decode}{Should the algorithm estimate jump detection probabilities? Default value is \code{TRUE}. }
+\item{plot.chain}{Colour palette for drawing trace plots. Default \code{palette = 'mono'}, otherwise a qualitative palette will be used.}
 }
 \details{
 
@@ -109,6 +111,8 @@ The number of updates to burn. That is, the first \code{burns} values are omitte
   \item{model.info$p}{The dimension of \code{theta}.}
   \item{model.info$DIC}{Calculated Deviance Information Criterion.}
   \item{model.info$pd}{Effective number of parameters (see \code{model.info$DIC}).}
+  \item{decode.prob}{Estimated jump detection probabilities.}
+  
 }
 \references{
 Updates available on GitHub at \url{https://github.com/eta21}.

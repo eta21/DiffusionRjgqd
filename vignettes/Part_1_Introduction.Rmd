@@ -1,13 +1,12 @@
-
 ---
 title: "Introduction to DiffusionRjgqd"
 author: "Etienne A.D. Pienaar"
-date: "December, 2015"
+date: "February, 2016"
+bibliography: bibliography.bib
 output:
   html_document:
     fig_width:  6
     fig_height: 6
-    keep_md: yes
     toc: yes
   pdf_document:
     toc: yes
@@ -17,24 +16,24 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 # Introduction
-__DiffusionRjgqd__ is an R package for performing inference and analysis on [Jump diffusion](http://www.proba.jussieu.fr/pageperso/tankov/tankov_voltchkova.pdf) processes. Jump diffusion processes extend standard [diffusion processes](https://en.wikipedia.org/wiki/It%C3%B4_diffusion) by allowing the trajectories of the process to undergo 'shocks' or 'jumps' at random points in time, inducing discontinuities in the trajectory of the process. As such, jump diffusion processes constitute an extremely useful class of mixture processes that enjoy a wide range of applications in various fields of science. As for standard diffusion processes, jump diffusion processes are difficult to work with since only a few models exist with analytically tractable dynamics. For these purposes we have developed the __DiffusionRjgqd__ package which extends upon the architecture [__DiffusionRjgqd__](https://cran.r-project.org/web/packages/DiffusionRgqd/index.html) package in order to provide tools for performing analysis on a class of non-linear, time inhomogeneous jump diffusion processes with state-dependent jump intensities.
+__DiffusionRjgqd__ is an R package for performing inference and analysis on [Jump diffusion](http://www.proba.jussieu.fr/pageperso/tankov/tankov_voltchkova.pdf) processes. Jump diffusion processes extend standard [diffusion processes](https://en.wikipedia.org/wiki/Ito_diffusion) by allowing the trajectories of the process to undergo 'shocks' or 'jumps' at random points in time, inducing discontinuities in the trajectory of the process. As such, jump diffusion processes constitute an extremely useful class of mixture processes that enjoy a wide range of applications in various fields of science. As in the case of jump free diffusion processes, jump diffusion processes are difficult to work with since very few models have analytically tractable dynamics. For these purposes we have developed the __DiffusionRjgqd__ package which extends upon the architecture [__DiffusionRgqd__](https://cran.r-project.org/package=DiffusionRgqd) package in order to provide tools for performing analysis on a class of non-linear, time inhomogeneous jump diffusion processes with state-dependent jump mechanisms.
 
 --------
 
 # Generalized quadratic jump diffusions (J-GQDs)
-__DiffusionRjgqd__ is built around a class of jump diffusion processes with quadratic drift and diffusion specifications and state dependent jump mechanism. That is, for an SDE:
+__DiffusionRjgqd__ is built around a class of jump diffusion processes with quadratic drift and diffusion specifications and state dependent jump mechanisms. That is, for an SDE:
 \[dX_t = \mu(X_t,t)dt +\sigma(X_t,t)dB_t +dP_t\]
-where B_t is standard Brownian motion, the drift and diffusion terms assume at most second order non-linearity:
+where $B_t$ is standard Brownian motion, the drift and diffusion terms assume at most second order non-linearity:
 \[\mu(X_t,t) = G_0(t)+G_1(t)X_t+G_2(t)X_t^2\]
 and 
 \[\sigma^2(X_t,t) = Q_0(t)+Q_1(t)X_t+Q_2(t)X_t^2.\]
 In addition to being driven by Brownian motion, jump diffusions are driven by pure jump processes. Within the generalized quadratic jump diffusion framework the jump mechanism of the process is assumed to take the form:
 \[
-dP_t = j(X_t,t,\dot{z}_t)dN_t 
+dP_t = J(X_t,t,\dot{z}_t)dN_t 
 \]
 for 
 \[
-j(X_t,t,\dot{z}_t) = 
+J(X_t,t,\dot{z}_t) = 
 \begin{cases}
 \dot{z}_t   &\mbox{if jumps are additive}\\
 \dot{z}_tX_t&\mbox{if jumps are multiplicative}\\
@@ -45,14 +44,13 @@ and $N_t$ is a counting process with arrival rate of the form:
  \lambda(X_t,t) = \lambda_0(t)+\lambda_1(t)X_t+\lambda_2(t)X_t^2
 \]
 
-
 The purpose of this restriction is to provide a mathematical 'sandbox' within which we can calculate very accurate approximations to the transitional density of a diffusion process whilst maximizing freedom with respect to specifying time-inhomogeneous components. That is, within this framework, although we have limited the complexity of state-dependence in the drift and diffusion of the model, one has nearly complete freedom of specification for time-inhomogeneous coefficients of the model (i.e., `G0(t)`, `Q1(t)` etc.). 
 
 --------
 
 # Interface
 
-The interface of the __DiffusionRjgqd__ package follows that of the related [__DiffusionRgqd__](https://cran.r-project.org/web/packages/DiffusionRgqd/index.html) package which is designed around a functional input system, where the user specifies the coefficients of the GQD as normal __R__-functions. For example, for a jump free diffusion with SDE:
+The interface of the __DiffusionRjgqd__ package follows that of the related [__DiffusionRgqd__](https://cran.r-project.org/package=DiffusionRgqd) package which is designed around a functional input system, where the user specifies the coefficients of the GQD as normal __R__-functions. For example, for a jump free diffusion with SDE:
 
 \[dX_t = -\sin(2\pi t)X_tdt +dB_t,\]
 
@@ -65,8 +63,8 @@ Q0 <- function(t){1}
 Building on this, if we add a jump component to the model, for example:
 \[dX_t = -\sin(2\pi t)X_tdt +dB_t+dP_t\]
 with 
-\[dP_t = z_tdN_t\]
-where $z_t\sim \mbox{N(0,0.5^2)}$ and the counting process $N_t$ is subject to an arrival rate $\lambda(X_t,t) = 0.15X_t$, we can extend the model within the workspace by using:
+\[dP_t = \dot{z}_tdN_t\]
+where $\dot{z}_t\sim \mbox{N(0,0.5^2)}$ and the counting process $N_t$ is subject to an arrival rate $\lambda(X_t,t) = 0.15X_t$, we can extend the model within the workspace by using the syntax:
 ```{r,eval=FALSE}
 G1   <- function(t){-sin(2*pi*t)}
 Q0   <- function(t){1}
@@ -77,24 +75,25 @@ Jsig <- function(t){0.5}
 
 Once again, the idea is to provide a grammatical link between the lexical structure of a generalized jump diffusion model in written language, to the __R__ language. Routines in the __DiffusionRjgqd__ package thus operate by searching the current __R__ workspace for pre-defined coefficient names after which it subsequently constructs the appropriate algorithm in order to perform analysis. For example, in the case of scalar jump-GQDs, recognized function names are tabled below.
 
-Coefficient __R__-syntax     Coefficient  __R__-syntax           
+Coefficient __R__-Syntax     Coefficient  __R__-Syntax           
 ----------- ---------------- -----------  ---------------- 
 $G_0(t)$    G0=function(t){} $Q_0(t)$     Q0=function(t){} 
 $G_1(t)$    G1=function(t){} $Q_1(t)$     Q1=function(t){} 
 $G_2(t)$    G2=function(t){} $Q_2(t)$     Q2=function(t){}   
 
-Coefficient        __R__-syntax                                             
+Coefficient        __R__-Syntax                                             
 --------------     ----------------                                         
 $\lambda_0(t)$     Lam0=function(t){}                                 
 $\lambda_1(t)$     Lam1=function(t){}                                 
 $\lambda_2(t)$     Lam2=function(t){}                                 
                                                                       
-Jump Distribution                Parameters                __R__-syntax        
------------------                ---------------           ------------------- 
-$\mbox{N}(\mu_z,\sigma_z^2)$     Location, scale           Jmu(t), Jsig(t)     
-$\mbox{Exp}(\lambda_z)$          $E(\dot{z}_t)=\lambda(t)$ Jlam(t) 
-$\mbox{Gamma}(\alpha_z,\beta_z)$ Shape, scale              Jalpha(t), Jbeta(t) 
-$\mbox{Laplace}(a_z,b_z)$        Location, scale           Ja(t), Jb(t) 
+Jump Distribution                      Parameters                    __R__-Syntax        
+-----------------                      ---------------               ------------------- 
+$\mbox{N}(\mu_z(t),\sigma_z^2(t))$     Location, scale               Jmu(t), Jsig(t)     
+$\mbox{Exp}(\lambda_z(t))$             $E(\dot{z}_t)=\lambda_z(t)$   Jlam(t) 
+$\mbox{Gamma}(\alpha_z(t),\beta_z(t))$ Shape, scale                  Jalpha(t), Jbeta(t) 
+$\mbox{Laplace}(a_z(t),b_z(t))$        Location, scale               Ja(t), Jb(t) 
+$\mbox{Uniform}(a_z(t),b_z(t))$        Support                       Ja(t), Jb(t) 
 --------
 
 # Brownian motion with drift and additive jumps
@@ -102,19 +101,18 @@ Consider a stochastic differential equation
 
 \[dX_t = \mu_x dt +\sigma_x dB_t+\dot{z}dN_t\]
 
-where $B_t$ is standard Brownian motion. Then the distribution of the process $X_t$ at time t, given that it started in state $X_s$ at time s with $\dot{z}\sim \mbox{N}(\mu_z,\sigma_z^2)$ and $N_t-N_s \sim \mbox{Poi}(\lambda (t-s))$, is given by (Yu 2007): 
+where $B_t$ is standard Brownian motion. Then the distribution of the process $X_t$ at time t, given that it started in state $X_s$ at time s with $\dot{z}\sim \mbox{N}(\mu_z,\sigma_z^2)$ and $N_t-N_s \sim \mbox{Poi}(\lambda (t-s))$, is given by [@Yu2007closed]: 
 
 \[
 \begin{aligned}
-f(X_t|X_s)&=\frac{1}{\sqrt{2\pi\sigma_x^2t}}\exp\bigg(-\frac{(X_t-X_s)^2}{2\sigma_x^2 t}+\frac{\mu_x(X_t-X_s)}{\sigma_x}-\bigg(\frac{\mu_x^2}{2\sigma_x^2}+\lambda\bigg)t\bigg)\\
-&+\sum_{i=1}^\infty\frac{e^{-\lambda t}\lambda^j t^j}{j!}\frac{1}{\sqrt{2 \pi(\sigma_x^2t+j\sigma_{{z}}^2)}}\exp\bigg(-\frac{(X_t-X_s-\mu_x t-j\mu_{{z}})^2}{2(\sigma_x^2 t+j \sigma_{{z}}^2)}\bigg).\\
+f(X_t|X_s)=&\frac{e^{-\lambda \tau}}{\sqrt{2\pi\sigma_x^2\tau}}\exp\bigg(-\frac{(X_t-X_s-\mu_x \tau)^2}{2\sigma_x^2 \tau}\bigg)\\&+\sum_{i=1}^\infty\frac{e^{-\lambda \tau}\lambda^i \tau^i}{i!}\frac{1}{\sqrt{2 \pi(\sigma_x^2\tau+i\sigma_{{z}}^2)}}\exp\bigg(-\frac{(X_t-X_s-\mu_x \tau-j\mu_{{z}})^2}{2(\sigma_x^2 \tau+i \sigma_{{z}}^2)}\bigg).\\
 \end{aligned}
 \]
 
 
 
 ```{r fig.align = 'center'}
-mu      <- 0.1
+mu.x    <- 0.1
 sigma.x <- 0.5
 lam     <- 0.5
 mu.z    <- 0.1
@@ -122,10 +120,10 @@ sigma.z <- 0.5
 
 true.density=function(X0,Xt,t,order =10)
 {
-   dens <- 1/sqrt(2*pi*sigma.x^2*t)*exp(-(Xt-X0)^2/(2*sigma.x^2*t)+mu/sigma.x^2*(Xt-X0))*exp(-(mu^2/(2*sigma.x^2)+lam)*t)
-   for(j in 1:order)
+   dens <- exp(-lam*t)*dnorm(Xt,X0+mu.x*t,sqrt(sigma.x^2*t))    
+    for(i in 1:order)
    {
-      dens <-  dens +exp(-lam*t)*lam^j/(factorial(j)*sqrt(2*pi)*sqrt(sigma.x^2*t+j*sigma.z^2))*exp(-(Xt-X0-mu*t-j*mu.z)^2/(2*(sigma.x^2*t+j*sigma.z^2)))*t^j
+      dens <-  dens +exp(-lam*t)*(lam*t)^i/factorial(i)*dnorm(Xt,X0+mu.x*t+i*mu.z*t,sqrt(sigma.x^2*t+i*sigma.z^2*t))
    }
    return(list(density=dens,Xt=Xt))
 }
@@ -134,7 +132,7 @@ res <- true.density(0,Xt,1)
 plot(res$density~Xt,type='l',main='Transition Density',xlab='X_t',ylab='density')
 ```
 
-Using __DiffusionRjgqd__ we can replicate the transition density of the above model by using the GQD-framework. This is achieved by defining the model in terms of its coefficients as per the GQD-framework. In __R__, for example, we can use the `JGQD.density()` function in order to generate the transitional density (if the interface seems a bit strange, have a look at the vignettes and package paper of the [__DiffusionRjgqd__](https://cran.r-project.org/web/packages/DiffusionRgqd/index.html)).
+Using __DiffusionRjgqd__ we can replicate the transition density of the above model by using the GQD-framework. This is achieved by defining the model in terms of its coefficients as per the GQD-framework. In __R__, for example, we can use the `JGQD.density()` function in order to generate the transitional density (if the interface seems a bit strange, have a look at the vignettes and package paper of the [__DiffusionRgqd__](https://cran.r-project.org/package=DiffusionRgqd)).
 
 ```{r fig.align = 'center'}
 library(DiffusionRjgqd)
@@ -142,7 +140,7 @@ library(DiffusionRjgqd)
 JGQD.remove()
 
 # Define the model coefficients:
-G0   <- function(t){mu}
+G0   <- function(t){mu.x}
 Q0   <- function(t){sigma.x^2}
 Lam0 <- function(t){lam}
 Jmu  <- function(t){mu.z}
@@ -158,17 +156,11 @@ lines(BM$density[,100]~BM$Xt,col='blue',lty='dashed',lwd=2)
 
 --------
 
-# References
-
-Yu, J. (2007). ``Closed-form likelihood approximation and estimation of jump-diffusions with an application to the realignment risk of the Chinese Yuan''. *Journal of Econometrics*, __141__(2):1245-1280
-
---------
-
 
 # Further reading
 * [Methodology paper](DiffusionRjgqd_Paper.pdf) and [replication materials](DiffusionRjgqd_RepMaterials.html).
 * Related packages:
-    + [__DiffusionRgqd__](https://cran.r-project.org/web/packages/DiffusionRgqd/index.html)
+    + [__DiffusionRgqd__](https://cran.r-project.org/package=DiffusionRgqd)
 * More Vignettes:
     + [Introduction](Part_1_Introduction.html)
     + [Transitional densities](Part_2_Transition_Densities.html)
@@ -178,6 +170,11 @@ Yu, J. (2007). ``Closed-form likelihood approximation and estimation of jump-dif
 ```{r,eval=FALSE}
 browseVignettes('DiffusionRjgqd')
 ```
+
+--------
+
+# References
+
 
 
 

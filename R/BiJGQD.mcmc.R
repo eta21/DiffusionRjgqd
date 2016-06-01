@@ -1,5 +1,5 @@
 globalVariables('priors')
-BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates/2),25000),exclude=NULL,plot.chain=TRUE,RK.order=4,wrt=FALSE,Tag=NA,Dtype='Saddlepoint',Jdist='MVNormal',Jtype='Add',adapt=0,print.output=TRUE)
+BiJGQD.mcmc=function(X,time,mesh=10,theta,sds,updates=10,burns=min(round(updates/2),25000),exclude=NULL,plot.chain=TRUE,RK.order=4,wrt=FALSE,Tag=NA,Dtype='Saddlepoint',Jdist='MVNormal',Jtype='Add',adapt=0,print.output=TRUE, decode=TRUE, palette = 'mono')
 {
   Mstar3 =1
   recycle=FALSE
@@ -791,6 +791,8 @@ if(state4)
   resss.col(0)=log(exp(dens1)%probs+exp(dens2)%(1-probs));
   List ret;
   ret["like"] = resss;
+  ret["like2"] = dens1;
+  ret["like3"] = dens2;
   ret["max"] = whch;
   ret["probs"] = probs;
   return(ret);  }'
@@ -1540,6 +1542,15 @@ MAT2=rbind(
     errors[1] = rs$max
     if(is.na(lold)){print('Fail: Could not evaluate likelihood at initial perameters.');failed.chain=T;}
     ll[1]=lold
+
+    excess = matrix(0,2,updates)
+    term.discont  = rep(0,nnn-1)
+    decodes = term.discont
+    decodes.prob = decodes
+    dec.matrix =matrix(0,nnn-1,updates)
+    ltemp1  =  rs$like3+log(1-rs$probs)
+    ltemp2  =  rs$like2+log(rs$probs)
+
     muvec = theta
     covvec = diag(1/(adapt^2/length(theta))*(sds)^2)
     if(adapt==0)
@@ -1582,6 +1593,7 @@ MAT2=rbind(
             if(is.na(rat)){retry.count=retry.count+1}
             if(retry.count>10){print('Fail: Local retry fail!');failed.chain=T;break;break;}
           }
+          decodes=dec.matrix[,i]
         }
         u=runif(1)
         is.true =(rat>u)
@@ -1592,13 +1604,28 @@ MAT2=rbind(
         ll[i]=lold
         probs[i] = mean(rs$probs)
         kk=kk+is.true
-        acc[i]=kk/i
+        acc[i]=is.true
+
+        if(decode)
+        {
+          ltemp1    = (tempp$like3+log(pmax(1-tempp$probs,0.000001)))*is.true     +ltemp1*is.false
+          ltemp2    = (tempp$like2+log(pmax(tempp$probs,0.000001)  ))*is.true     +ltemp2*is.false
+          dc.new    = sample(c(0,1),nnn-1,replace=TRUE)
+          dlike.old = ltemp1*(decodes==1)+(ltemp2)*(decodes==0)
+          dlike.new = ltemp1*(dc.new==1) +(ltemp2)*(dc.new==0)
+          is.switch = (pmin(exp(dlike.new-dlike.old),1)>runif(nnn-1))
+          decodes   = dc.new*is.switch+decodes*(!is.switch)
+          dec.matrix[,i] = decodes
+          if(any(is.na(decodes))){print('Fail: Decoding structure NAs.');failed.chain=TRUE;break;}
+        }
+
         if(max.retries>5000){print('Fail: Failed evaluation limit exceeded!');failed.chain=T;break;}
         if(any(is.na(theta))){print('Fail: Samples were NA! ');failed.chain=T;break;}
         setTxtProgressBar(pb, i)
         i=i+1
     }
     close(pb)
+    acc = cumsum(acc)/(1:updates)
     }
     if(adapt!=0)
     {
@@ -1682,7 +1709,7 @@ MAT2=rbind(
       if(nper==3){par(mfrow=c(2,2))}
       if(nper>3)
       {
-        d1=1:((nper)+1)
+        d1=1:((nper)+2)
         d2=d1
         O=outer(d1,d2)
         test=O-((nper)+1)
@@ -1695,7 +1722,14 @@ MAT2=rbind(
         d2=d2[row(test)[wh[1]]]
         par(mfrow=c(d1,d2))
       }
-      cols=rainbow_hcl(nper, start = 10, end = 275,c=100,l=70)
+    if(palette=='mono')
+    {
+     cols =rep('#222299',nper)
+    }else{
+     cols=rainbow_hcl(nper, start = 10, end = 275,c=100,l=70)
+    }
+
+      
       ylabs=paste0('theta[',1:nper,']')
       for(i in 1:nper)
       {
@@ -1712,8 +1746,15 @@ MAT2=rbind(
       lines(probs,col='purple',lty='dotted',lwd=2)
 
       box()
+      if(decode)
+      {
+        plot(term.discont~time[-1],type='n',col='darkblue',main='Jump detection prob.',xlab='Time (t)',ylab='Prob.',ylim=c(0,1))
+        abline(h=seq(0,1,1/10),lty='dotted',col='gray75')
+        lines(c(rowSums(dec.matrix)/updates)~c(time[-1]-0.5*diff(time)[1]),col='steelblue',type='h')
+      }
+
     }
-    ret=list(par.matrix=t(par.matrix),acceptance.rate=acc,elapsed.time=tme,model.info=model.inf,failed.chain=failed.chain,covvec=covvec,prop.matrix=t(prop.matrix),errors=errors)
+    ret=list(par.matrix=t(par.matrix),acceptance.rate=acc,elapsed.time=tme,model.info=model.inf,failed.chain=failed.chain,covvec=covvec,prop.matrix=t(prop.matrix),errors=errors,decode.prob=rowSums(dec.matrix[,burns:updates])/(updates-burns),dec.matrix=dec.matrix)
     class(ret) = 'JGQD.mcmc'
     return(ret)
   }

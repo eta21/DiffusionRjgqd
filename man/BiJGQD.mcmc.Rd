@@ -85,6 +85,8 @@ BiJGQD.mcmc(X, time, mesh = 10, theta, sds, updates = 10,
 \item{adapt}{For development purposes.}
 \item{wrt}{If \code{TRUE} a .cpp file will be written to the current directory. For bug report diagnostics.}
 \item{print.output}{If \code{TRUE} information about the model and algorithm is printed to the console. }
+\item{decode}{Should the algorithm estimate jump detection probabilities? Default value is \code{TRUE}. }
+\item{plot.chain}{Colour palette for drawing trace plots. Default \code{palette = 'mono'}, otherwise a qualitative palette will be used.}
 }
 \value{
   \item{par.matrix }{A matrix containing the MCMC chain on \code{theta}. }
@@ -95,6 +97,7 @@ BiJGQD.mcmc(X, time, mesh = 10, theta, sds, updates = 10,
   \item{model.info$p}{The dimension of \code{theta}.}
   \item{model.info$DIC}{Calculated Deviance Information Criterion.}
   \item{model.info$pd}{Effective number of parameters (see \code{model.info$DIC}).}
+  \item{decode.prob}{Estimated jump detection probabilities.}
 }
 \references{
 Updates available on GitHub at \url{https://github.com/eta21}.

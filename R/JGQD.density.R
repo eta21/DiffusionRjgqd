@@ -5,7 +5,7 @@ JGQD.density=function(Xs=4,Xt=seq(5,8,1/10),s=0,t=5,delt=1/100,Jdist='Normal',Jt
    P=100;alpha=0.1;lower=0;upper=50
    TR.order=Trunc[1]
    DTR.order=Trunc[2]
-   Dtypes =c('Saddlepoint','Edgeworth','Normal.A','Gamma.A')
+   Dtypes =c('Saddlepoint','Edgeworth','Normal.A','Gamma.A','Beta','Saddle.Gamma','Gamma.Saddle')
 
    check_for_model=function()
   {
@@ -29,26 +29,29 @@ JGQD.density=function(Xs=4,Xt=seq(5,8,1/10),s=0,t=5,delt=1/100,Jdist='Normal',Jt
   G0=function(t){5+2*sin(4*pi*t)}
   G1=function(t){-1}
   Q1=function(t){1}
+  Lam0 = function(t){0.1}
+  Jmu  = function(t){0}
+  Jsig = function(t){1}
 
-  model=GQD.density(5,seq(0,10,1/10),0,5,1/100)
-  GQD.plot(model)
+  model=JGQD.density(5,seq(0,10,1/10),0,5,1/100)
+  JGQD.plot(model)
   --------------------------------------------------------------------------------
    '
    check=T
    }
-   if((sum(func.list)>0)&&(sum(func.list[-c(1:3)])==0))
+   if((sum(func.list)>0)&&(sum(func.list[c(1:3)+3])==0))
    {
-   txt='
+   txt2='
   --------------------------------------------------------------------------------
-  At least one diffusion coefficient has to be defined! Try for example:
-  --------------------------------------------------------------------------------
-  GQD.remove()
-  Q0=function(t){2+sin(5*pi*t)}
-  model=GQD.density(5,seq(0,10,1/10),0,5,1/100)
-  GQD.plot(model)
+  No diffusion coefficients specified. The resulting process will be that of a
+  Hawkes process.
+
+  {factor.type} changed to "Hawke"
   --------------------------------------------------------------------------------
    '
-     check=T
+
+     warning(txt2)
+     factor.type = 'Hawke'
     }
     return(list(check=check,txt=txt))
   }
@@ -186,6 +189,7 @@ JGQD.density=function(Xs=4,Xt=seq(5,8,1/10),s=0,t=5,delt=1/100,Jdist='Normal',Jt
    if(Jdist=='Exponential'){checklist[c(10,11,13,14,15,16)]=0}
    if(Jdist=='Gamma')      {checklist[c(10:12,15,16)]=0}
    if(Jdist=='Laplace')      {checklist[c(10:14)]=0}
+   if(Jdist=='Uniform')      {checklist[c(10:14)]=0}
    coef.index=which(checklist==1)
 
     #==============================================================================
@@ -317,6 +321,31 @@ x[8+2]^2*x[8+5]-4536*x[8+1]^2*x[8+2]*x[8+5]+3024*x[8+1]^4*x[8+5]+630*x[8+1]*x[8+
 -15120*x[8+1]^5*x[8+4]+560*x[8+3]^3-15120*x[8+1]*x[8+2]*x[8+3]^2+20160*x[8+1]^3*x[8+3]^2-7560*x[8+2]^3*x[8+3]+90720*x[8+1]^2*x[8+2]^2*x[8+3]-151200*x[8+1]^4*x[8+2]*x[8+3]+60480*
 x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x[8+2]^2-181440*x[8+1]^7*x[8+2]+40320*x[8+1]^9)))  +28*mm2*x[8]+56*mm3*x[7]+70*mm4*x[6]+56*mm5*x[5]+28*mm6*x[4]+8*mm7*x[3]+1*mm8*x[2]")
 
+                 if((!missing(beta))&&(length(beta)==2))
+                 {
+                   a..=beta[1]
+                   b..=beta[2]
+
+                   JA0 =
+                     c("(b..*x[1]+a..)*mm1",
+                       "(b..^2*x[2]+2*a..*b..*x[1]+a..^2)*mm2+(2*b..*x[2]+2*a..*x[1])*mm1",
+                       "(b..^3*x[3]+3*a..*b..^2*x[2]+3*a..^2*b..*x[1]+a..^3)*mm3+(3*b..^2*x[3]+6*a..*b..*x[2]+3*a..^2*x[1])*mm2+(3*b..*x[3]+3*a..*x[2])*mm1",
+                       "(b..^4*x[4]+4*a..*b..^3*x[3]+6*a..^2*b..^2*x[2]+4*a..^3*b..*x[1]+a..^4)*mm4+(4*b..^3*x[4]+12*a..*b..^2*x[3]+12*a..^2*b..*x[2]+4*a..^3*x[1])*mm3+(6*b..^2*x[4]+12*a..*b..*x[3]+6*a..^2*x[2])*mm2+(4*b..*x[4]+4*a..*x[3])*mm1",
+                       "(b..^5*x[5]*mm5+5*a..*b..^4*x[4]*mm5+10*a..^2*b..^3*x[3]*mm5+10*a..^3*b..^2*x[2]*mm5+5*a..^4*b..*x[1]*mm5+a..^5*mm5+5*b..^4*x[5]*mm4+20*a..*b..^3*x[4]*mm4+30*a..^2*b..^2*x[3]*mm4+20*a..^3*b..*x[2]*mm4+5*a..^4*x[1]*mm4+10*b..^3*x[5]*mm3+30*a..*b..^2*x[4]*mm3+30*a..^2*b..*x[3]*mm3+10*a..^3*x[2]*mm3+10*b..^2*x[5]*mm2+20*a..*b..*x[4]*mm2+10*a..^2*x[3]*mm2+5*b..*x[5]*mm1+5*a..*x[4]*mm1)",
+                       "(b..^6*x[6]*mm6+6*a..*b..^5*x[5]*mm6+15*a..^2*b..^4*x[4]*mm6+20*a..^3*b..^3*x[3]*mm6+15*a..^4*b..^2*x[2]*mm6+6*a..^5*b..*x[1]*mm6+a..^6*mm6+6*b..^5*x[6]*mm5+30*a..*b..^4*x[5]*mm5+60*a..^2*b..^3*x[4]*mm5+60*a..^3*b..^2*x[3]*mm5
++30*a..^4*b..*x[2]*mm5+6*a..^5*x[1]*mm5+15*b..^4*x[6]*mm4+60*a..*b..^3*x[5]*mm4+90*a..^2*b..^2*x[4]*mm4+60*a..^3*b..*x[3]*mm4+15*a..^4*x[2]*mm4+20*b..^3*x[6]*mm3+60*a..*b..^2*x[5]*mm3+60*a..^2*b..*x[4]*mm3+20*a..^3*x[3]*mm3+15*
+b..^2*x[6]*mm2+30*a..*b..*x[5]*mm2+15*a..^2*x[4]*mm2+6*b..*x[6]*mm1+6*a..*x[5]*mm1)",
+                       "(b..^7*x[7]*mm7+7*a..*b..^6*x[6]*mm7+21*a..^2*b..^5*x[5]*mm7+35*a..^3*b..^4*x[4]*mm7+35*a..^4*b..^3*x[3]*mm7+21*a..^5*b..^2*x[2]*mm7+7*a..^6*b..*x[1]*mm7+a..^7*mm7+7*b..^6*x[7]*mm6+42*a..*b..^5*x[6]*mm6+105*a..^2*b..^4*x[5]*
+mm6+140*a..^3*b..^3*x[4]*mm6+105*a..^4*b..^2*x[3]*mm6+42*a..^5*b..*x[2]*mm6+7*a..^6*x[1]*mm6+21*b..^5*x[7]*mm5+105*a..*b..^4*x[6]*mm5+210*a..^2*b..^3*x[5]*mm5+210*a..^3*b..^2*x[4]*mm5+105*a..^4*b..*x[3]*mm5+21*a..^5*x[2]*mm5+
+35*b..^4*x[7]*mm4+140*a..*b..^3*x[6]*mm4+210*a..^2*b..^2*x[5]*mm4+140*a..^3*b..*x[4]*mm4+35*a..^4*x[3]*mm4+35*b..^3*x[7]*mm3+105*a..*b..^2*x[6]*mm3+105*a..^2*b..*x[5]*mm3+35*a..^3*x[4]*mm3+21*b..^2*x[7]*mm2+42*a..*b..*x[6]*
+mm2+21*a..^2*x[5]*mm2+7*b..*x[7]*mm1+7*a..*x[6]*mm1)",
+                       "(b..^8*x[8]*mm8+8*a..*b..^7*x[7]*mm8+28*a..^2*b..^6*x[6]*mm8+56*a..^3*b..^5*x[5]*mm8+70*a..^4*b..^4*x[4]*mm8+56*a..^5*b..^3*x[3]*mm8+28*a..^6*b..^2*x[2]*mm8+8*a..^7*b..*x[1]*mm8+a..^8*mm8+8*b..^7*x[8]*mm7+56*a..*b..^6*x[7]*mm7
++168*a..^2*b..^5*x[6]*mm7+280*a..^3*b..^4*x[5]*mm7+280*a..^4*b..^3*x[4]*mm7+168*a..^5*b..^2*x[3]*mm7+56*a..^6*b..*x[2]*mm7+8*a..^7*x[1]*mm7+28*b..^6*x[8]*mm6+168*a..*b..^5*x[7]*mm6+420*a..^2*b..^4*x[6]*mm6+560*a..^3*b..^3*x[5]*mm6
++420*a..^4*b..^2*x[4]*mm6+168*a..^5*b..*x[3]*mm6+28*a..^6*x[2]*mm6+56*b..^5*x[8]*mm5+280*a..*b..^4*x[7]*mm5+560*a..^2*b..^3*x[6]*mm5+560*a..^3*b..^2*x[5]*mm5+280*a..^4*b..*x[4]*mm5+56*a..^5*x[3]*mm5+70*b..^4*x[8]*mm4+280*
+a..*b..^3*x[7]*mm4+420*a..^2*b..^2*x[6]*mm4+280*a..^3*b..*x[5]*mm4+70*a..^4*x[4]*mm4+56*b..^3*x[8]*mm3+168*a..*b..^2*x[7]*mm3+168*a..^2*b..*x[6]*mm3+56*a..^3*x[5]*mm3+28*b..^2*x[8]*mm2+56*a..*b..*x[7]*mm2+28*a..^2*x[6]*mm2+8
+*b..*x[8]*mm1+8*a..*x[7]*mm1)")
+                   print('Invoked special jump structure.')
+                 }
         if(checklist[7]==1)
         {
           for(i in 1:8)
@@ -341,7 +370,7 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
 
    }
    #c('G0','G1','G2','Q0','Q1','Q2','Lam0','Lam1','Lam2','Jmu','Jsig','Jlam','Jalpha','Jbeta')
-   if(checklist[7]==0){Lam1=function(t){0}}
+   if(checklist[7]==0){Lam0=function(t){0}}
    if(checklist[8]==0){Lam1=function(t){0}}
    if(checklist[9]==0){Lam2=function(t){0}}
    if(checklist[10]==0){Jmu=function(t){0}}
@@ -407,13 +436,13 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
    }
     if((!missing(beta))&&(length(beta)==2))
    {
-        a=beta[1]
-        b=beta[2]
+        a..=beta[1]
+        b..=beta[2]
         JA0 =
-        c("b*x[1]*mm1+a*mm1"
-        ,"b^2*x[2]*mm2+2*a*b*x[1]*mm2+a^2*mm2+2*b*x[2]*mm1+2*a*x[1]*mm1"
-        ,"b^3*x[3]*mm3+3*a*b^2*x[2]*mm3+3*a^2*b*x[1]*mm3+a^3*mm3+3*b^2*x[3]*mm2+6*a*b*x[2]*mm2+3*a^2*x[1]*mm2+3*b*x[3]*mm1+3*a*x[2]*mm1"
-        ,"b^4*x[4]*mm4+4*a*b^3*x[3]*mm4+6*a^2*b^2*x[2]*mm4+4*a^3*b*x[1]*mm4+a^4*mm4+4*b^3*x[4]*mm3+12*a*b^2*x[3]*mm3+12*a^2*b*x[2]*mm3+4*a^3*x[1]*mm3+6*b^2*x[4]*mm2+12*a*b*x[3]*mm2+6*a^2*x[2]*mm2+4*b*x[4]*mm1+4*a*x[3]*mm1")
+        c("b..*x[1]*mm1+a..*mm1"
+        ,"b..^2*x[2]*mm2+2*a..*b..*x[1]*mm2+a..^2*mm2+2*b..*x[2]*mm1+2*a..*x[1]*mm1"
+        ,"b..^3*x[3]*mm3+3*a..*b..^2*x[2]*mm3+3*a..^2*b..*x[1]*mm3+a..^3*mm3+3*b..^2*x[3]*mm2+6*a..*b..*x[2]*mm2+3*a..^2*x[1]*mm2+3*b..*x[3]*mm1+3*a..*x[2]*mm1"
+        ,"b..^4*x[4]*mm4+4*a..*b..^3*x[3]*mm4+6*a..^2*b..^2*x[2]*mm4+4*a..^3*b..*x[1]*mm4+a..^4*mm4+4*b..^3*x[4]*mm3+12*a..*b..^2*x[3]*mm3+12*a..^2*b..*x[2]*mm3+4*a..^3*x[1]*mm3+6*b..^2*x[4]*mm2+12*a..*b..*x[3]*mm2+6*a..^2*x[2]*mm2+4*b..*x[4]*mm1+4*a..*x[3]*mm1")
         print('Invoked special jump structure.')
    }
   if(checklist[7]==1)
@@ -505,40 +534,42 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
 
    if(Jdist=='Laplace')
    {
+     #print('yeah')
      prem =
-     'mm1=0.5*(+2*a^1*b^0)
-      mm2=0.5*(+2*a^2*b^0+4*a^0*b^2)
-     	mm3=0.5*(+2*a^3*b^0+12*a^1*b^2)
-     	mm4=0.5*(+2*a^4*b^0+24*a^2*b^2+48*a^0*b^4)
-     	mm5=0.5*(+2*a^5*b^0+40*a^3*b^2+240*a^1*b^4)
-     	mm6=0.5*(+2*a^6*b^0+60*a^4*b^2+720*a^2*b^4+1440*a^0*b^6)
-     	mm7=0.5*(+2*a^7*b^0+84*a^5*b^2+1680*a^3*b^4+10080*a^1*b^6)
-     	mm8=0.5*(+2*a^8*b^0+112*a^6*b^2+3360*a^4*b^4+40320*a^2*b^6+80640*a^0*b^8)
+     'mm1=0.5*(+2*aaaa^1*bbbb^0)
+      mm2=0.5*(+2*aaaa^2*bbbb^0+4*aaaa^0*bbbb^2)
+     	mm3=0.5*(+2*aaaa^3*bbbb^0+12*aaaa^1*bbbb^2)
+     	mm4=0.5*(+2*aaaa^4*bbbb^0+24*aaaa^2*bbbb^2+48*aaaa^0*bbbb^4)
+     	mm5=0.5*(+2*aaaa^5*bbbb^0+40*aaaa^3*bbbb^2+240*aaaa^1*bbbb^4)
+     	mm6=0.5*(+2*aaaa^6*bbbb^0+60*aaaa^4*bbbb^2+720*aaaa^2*bbbb^4+1440*aaaa^0*bbbb^6)
+     	mm7=0.5*(+2*aaaa^7*bbbb^0+84*aaaa^5*bbbb^2+1680*aaaa^3*bbbb^4+10080*aaaa^1*bbbb^6)
+     	mm8=0.5*(+2*aaaa^8*bbbb^0+112*aaaa^6*bbbb^2+3360*aaaa^4*bbbb^4+40320*aaaa^2*bbbb^6+80640*aaaa^0*bbbb^8)
       '
-      prem=paste0('a = ',body('Ja')[2],'\n',prem)
-      prem=paste0('b  = ',body('Jb')[2],'\n',prem)
+      prem=paste0('aaaa = ',body('Ja')[2],'\n',prem)
+      prem=paste0('bbbb  = ',body('Jb')[2],'\n',prem)
+
    }
    if(Jdist=='Uniform')
    {
-
-
      prem =
      '
-     mm1=(b+a)/2
-     mm2=(a^2+a*b +b^2)/3
-     mm3=1/4*(a+b)*(a^2+b^2)
-     mm4=1/5*(a^4+a^3*b+a^2*b^2+a*b^3+b^4)
-     mm5=1/6*(a^5+a^4*b+a^3*b^2+a^2*b^3+a^1*b^4+b^5)
-     mm6=1/7*(a^6+a^5*b^1+a^4*b^2+a^3*b^3+a^2*b^4+a^1*b^5+b^6)
-     mm7=1/8*(a^7+a^6*b^1+a^5*b^2+a^4*b^3+a^3*b^4+a^2*b^5+a^1*b^6+b^7)
-     mm8=1/9*(a^8+a^7*b^1+a^6*b^2+a^5*b^3+a^4*b^4+a^3*b^5+a^2*b^6+a^1*b^7+b^8)
+     mm1=(bbbb+aaaa)/2
+     mm2=(aaaa^2+aaaa*bbbb +bbbb^2)/3
+     mm3=1/4*(aaaa+bbbb)*(aaaa^2+bbbb^2)
+     mm4=1/5*(aaaa^4+aaaa^3*bbbb+aaaa^2*bbbb^2+aaaa*bbbb^3+bbbb^4)
+     mm5=1/6*(aaaa^5+aaaa^4*bbbb+aaaa^3*bbbb^2+aaaa^2*bbbb^3+aaaa^1*bbbb^4+bbbb^5)
+     mm6=1/7*(aaaa^6+aaaa^5*bbbb^1+aaaa^4*bbbb^2+aaaa^3*bbbb^3+aaaa^2*bbbb^4+aaaa^1*bbbb^5+bbbb^6)
+     mm7=1/8*(aaaa^7+aaaa^6*bbbb^1+aaaa^5*bbbb^2+aaaa^4*bbbb^3+aaaa^3*bbbb^4+aaaa^2*bbbb^5+aaaa^1*bbbb^6+bbbb^7)
+     mm8=1/9*(aaaa^8+aaaa^7*bbbb^1+aaaa^6*bbbb^2+aaaa^5*bbbb^3+aaaa^4*bbbb^4+aaaa^3*bbbb^5+aaaa^2*bbbb^6+aaaa^1*bbbb^7+bbbb^8)
      '
-     prem=paste0('a = ',body('Ja')[2],'\n',prem)
-     prem=paste0('b = ',body('Jb')[2],'\n',prem)
+
+      prem=paste0('aaaa = ',body('Ja')[2],'\n',prem)
+      prem=paste0('bbbb = ',body('Jb')[2],'\n',prem)
+
    }
 
    odekernel=paste0('{',prem,odekernel,'}')
-   #write(odekernel,'res.txt')
+   write(odekernel,'res.txt')
    ff <- function(x,t){}
 
    body(ff) = (parse(text=odekernel))
@@ -641,8 +672,141 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
 
   if(eval.density)
   {
-   DD=matrix(0,length(Xt),N)
-      if(Dtype=='Gamma.A')
+    DD=matrix(0,length(Xt),N)
+
+    if(Dtype=='Saddle.Gamma')
+    {
+      print('yeaahh')
+      dens1=function(xx,m)
+     {
+        k =m*0
+        k[1]=                                          m[1]
+        k[2]=                               m[2]-1*k[1]*m[1]
+        k[3]=                m[3]-1*k[1]*m[2]-2*k[2]*m[1]
+        k[4]= m[4]-1*k[1]*m[3]-3*k[2]*m[2]-3*k[3]*m[1]
+
+        p=1/3*(3*(k[4]/6)*k[2] - ((k[3]/2)^2))/((k[4]/6)^2)
+        q=1/27*(27*((k[4]/6)^2)*(k[1]-xx) - 9*(k[4]/6)*(k[3]/2)*k[2] + 2*((k[3]/2)^3))/((k[4]/6)^3)
+        chk=(q^2)/4 + (p^3)/27
+        th=-(k[3]/2)/(3*(k[4]/6))+(-q/2+sqrt(chk))^(1/3)-(q/2+sqrt(chk))^(1/3)
+
+        K=k[1]*th+(k[2]*th^2)/2+(k[3]*th^3)/6 +(k[4]*th^4)/24
+        K1=k[1]+(k[2]*th)+(k[3]*th^2)/2+(k[4]*th^3)/6
+        K2=k[2]+(k[3]*th)+(k[4]*th^2)/2
+        K3=k[3]+(k[4]*th)
+        K4=k[4]
+        return(1/sqrt(2*pi*(K2))*exp(K-th*K1))
+     }
+
+      dens2=function(xx,m)
+     {
+        theta = (m[2]-m[1]^2)/m[1]
+        kappa = m[1]/theta
+        nu = dgamma(xx,shape=kappa,scale=theta)
+        return(nu)
+     }
+      if(DTR.order==4)
+     {
+       MMM = MM[(TR.order+1):(2*TR.order),]
+       VVV = MM*0
+       p0 = exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])
+       p1 = 1-p0
+       VVV[1,] = (MM[1,]-p0*MM[1+TR.order,])/p1
+       VVV[2,] = (MM[2,]-p0*MM[2+TR.order,])/p1
+       VVV[3,] = (MM[3,]-p0*MM[3+TR.order,])/p1
+       VVV[4,] = (MM[4,]-p0*MM[4+TR.order,])/p1
+
+       if(!factorize)
+       {
+         for(i in 1:N)
+         {
+           DD[,i]=dens1(Xt,MM[1:4,i])
+         }
+       }
+       if(factorize)
+       {
+         if(factor.type=='Diffusion')
+         {
+           for(i in 1:N)
+           {
+            if(p0[i]>0.01){DD[,i]=dens1(Xt,MMM[1:4,i])*p0[i]+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
+           }
+         }
+         if(factor.type=='Hawke')
+         {
+            if(p0[i]>0.01){DD[,i]=p0[i]/diff(Xt)[1]*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
+         }
+       }
+       DD=list(density=DD,MSH=0)
+     }
+    }
+     if(Dtype=='Gamma.Saddle')
+    {
+      print('yeahh')
+      dens2=function(xx,m)
+     {
+        k =m*0
+        k[1]=                                          m[1]
+        k[2]=                               m[2]-1*k[1]*m[1]
+        k[3]=                m[3]-1*k[1]*m[2]-2*k[2]*m[1]
+        k[4]= m[4]-1*k[1]*m[3]-3*k[2]*m[2]-3*k[3]*m[1]
+
+        p=1/3*(3*(k[4]/6)*k[2] - ((k[3]/2)^2))/((k[4]/6)^2)
+        q=1/27*(27*((k[4]/6)^2)*(k[1]-xx) - 9*(k[4]/6)*(k[3]/2)*k[2] + 2*((k[3]/2)^3))/((k[4]/6)^3)
+        chk=(q^2)/4 + (p^3)/27
+        th=-(k[3]/2)/(3*(k[4]/6))+(-q/2+sqrt(chk))^(1/3)-(q/2+sqrt(chk))^(1/3)
+
+        K=k[1]*th+(k[2]*th^2)/2+(k[3]*th^3)/6 +(k[4]*th^4)/24
+        K1=k[1]+(k[2]*th)+(k[3]*th^2)/2+(k[4]*th^3)/6
+        K2=k[2]+(k[3]*th)+(k[4]*th^2)/2
+        K3=k[3]+(k[4]*th)
+        K4=k[4]
+        return(1/sqrt(2*pi*(K2))*exp(K-th*K1))
+     }
+
+      dens1=function(xx,m)
+     {
+        theta = (m[2]-m[1]^2)/m[1]
+        kappa = m[1]/theta
+        nu = dgamma(xx,shape=kappa,scale=theta)
+        return(nu)
+     }
+      if(DTR.order==4)
+     {
+       MMM = MM[(TR.order+1):(2*TR.order),]
+       VVV = MM*0
+       p0 = exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])
+       p1 = 1-p0
+       VVV[1,] = (MM[1,]-p0*MM[1+TR.order,])/p1
+       VVV[2,] = (MM[2,]-p0*MM[2+TR.order,])/p1
+       VVV[3,] = (MM[3,]-p0*MM[3+TR.order,])/p1
+       VVV[4,] = (MM[4,]-p0*MM[4+TR.order,])/p1
+
+       if(!factorize)
+       {
+         for(i in 1:N)
+         {
+           DD[,i]=dens1(Xt,MM[1:4,i])
+         }
+       }
+       if(factorize)
+       {
+         if(factor.type=='Diffusion')
+         {
+           for(i in 1:N)
+           {
+            if(p0[i]>0.01){DD[,i]=dens1(Xt,MMM[1:4,i])*p0[i]+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
+           }
+         }
+         if(factor.type=='Hawke')
+         {
+            if(p0[i]>0.01){DD[,i]=p0[i]/diff(Xt)[1]*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
+         }
+       }
+       DD=list(density=DD,MSH=0)
+     }
+    }
+    if(Dtype=='Gamma.A')
   {
     if(factorize)
     {
@@ -651,13 +815,13 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
      if(DTR.order==4)
     {
 
-     MMM = MM[(TR.order+1):(2*TR.order),]
-     VVV = MM*0
+      MMM = MM[(TR.order+1):(2*TR.order),]
+      VVV = MM*0
 
-     VVV[1,] = (MM[1,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[1+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-     VVV[2,] = (MM[2,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[2+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-     VVV[3,] = (MM[3,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[3+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-     VVV[4,] = (MM[4,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[4+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+      VVV[1,] = (MM[1,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[1+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+      VVV[2,] = (MM[2,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[2+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+      VVV[3,] = (MM[3,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[3+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+      VVV[4,] = (MM[4,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[4+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
 
        saddlep=function(xx,m)
        {
@@ -742,7 +906,7 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
       {
          if(exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i])>0.01)
          {
-           DD[,i]=exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i])*Xt*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i]))#+dnorm(Xt,VVV[1,i],sqrt(VVV[2,i]-VVV[1,i]^2))*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))#+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))
+           DD[,i]=exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i])/diff(Xt)[1]*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i]))#+dnorm(Xt,VVV[1,i],sqrt(VVV[2,i]-VVV[1,i]^2))*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))#+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))
          }else
          {
            DD[,i]=saddlep(Xt,MM[1:4,i])
@@ -940,7 +1104,7 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
       {
          if(exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i])>0.01)
          {
-           DD[,i]=exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i])*Xt*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i]))#+dnorm(Xt,VVV[1,i],sqrt(VVV[2,i]-VVV[1,i]^2))*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))#+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))
+           DD[,i]=exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i])/diff(Xt)[1]*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[2*TR.order+1,i]-MM[2*TR.order+2,i]-MM[2*TR.order+3,i]))#+dnorm(Xt,VVV[1,i],sqrt(VVV[2,i]-VVV[1,i]^2))*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))#+saddlep(Xt,VVV[1:4,i])*(1-exp(-MM[17,i]-MM[18,i]-MM[19,i]))
          }else
          {
            DD[,i]=saddlep(Xt,MM[1:4,i])
@@ -1782,11 +1946,13 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
      VVV[2,] = (MM[2,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[2+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
      VVV[3,] = (MM[3,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[3+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
      VVV[4,] = (MM[4,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[4+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-     VVV[5,] = (MM[5,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[5+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-     VVV[6,] = (MM[6,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[6+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-     VVV[7,] = (MM[7,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[7+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-     VVV[8,] = (MM[8,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[8+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
-
+     if(TR.order==8)
+     {
+       VVV[5,] = (MM[5,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[5+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+       VVV[6,] = (MM[6,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[6+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+       VVV[7,] = (MM[7,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[7+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+       VVV[8,] = (MM[8,]-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])*MM[8+TR.order,])/(1-exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,]))
+     }
     if(factorize)
     {
       prb=exp(-MM[2*TR.order+1,]-MM[2*TR.order+2,]-MM[2*TR.order+3,])
@@ -1803,7 +1969,7 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
     }
     if(!factorize)
     {
-      DD=pearson(Xt,MMM,'Beta')
+      DD=pearson(Xt,MM,'Beta')
 
     }
   }
@@ -1824,7 +1990,7 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
   # Fix this!!!
   if(TR.order==8)
   {
-  u=MM[1:8+TR.order,]
+  u=MM[1:8,]
   k=u*0
   k[1,]=                                                                                                      u[1,]
   k[2,]=                                                                                         u[2,]-1*k[1,]*u[1,]
@@ -1837,7 +2003,7 @@ x[8+1]^6*x[8+3]+22680*x[8+1]*x[8+2]^4-151200*x[8+1]^3*x[8+2]^3+272160*x[8+1]^5*x
   }
   if(TR.order==4)
   {
-    u=MM[1:4+TR.order,]
+    u=MM[1:4,]
     k=u*0
     k[1,]=                                                                                                      u[1,]
     k[2,]=                                                                                         u[2,]-1*k[1,]*u[1,]

@@ -1,5 +1,5 @@
 Package: DiffusionRjgqd
-Version: 0.1.0
+Version: 0.1.1
 Title: Inference and Analysis for Jump Generalized Quadratic Diffusions
 Description: Tools for performing inference and analysis on a class of quadratic jump diffusion processes.
 Authors@R:c(person("Etienne A.D.", "Pienaar", email = "etiennead@gmail.com",role = c("aut", "cre")),
