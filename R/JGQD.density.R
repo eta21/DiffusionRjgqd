@@ -46,12 +46,12 @@ JGQD.density=function(Xs=4,Xt=seq(5,8,1/10),s=0,t=5,delt=1/100,Jdist='Normal',Jt
   No diffusion coefficients specified. The resulting process will be that of a
   Hawkes process.
 
-  {factor.type} changed to "Hawke"
+  {factor.type} changed to "Hawkes"
   --------------------------------------------------------------------------------
    '
 
      warning(txt2)
-     factor.type = 'Hawke'
+     factor.type = 'Hawkes'
     }
     return(list(check=check,txt=txt))
   }
@@ -93,8 +93,8 @@ JGQD.density=function(Xs=4,Xt=seq(5,8,1/10),s=0,t=5,delt=1/100,Jdist='Normal',Jt
     ,'Input 23: {Jdist} must be one of Normal, Exponential, Gamma or Laplace.\n'
     ,'Input 24: {Jtype} has to be of type Add or Mult.\n'
     ,'Input 25: {factorize} has to be TRUE or FALSE.\n'
-    ,'Input 26: {factor.type} has to be Diffusion or Hawke.\n'
-    ,'Input 27: Diffusion terms are 0. Use {factorize=TRUE} and {factor.type="Hawke"}.\n'
+    ,'Input 26: {factor.type} has to be Diffusion or Hawkes.\n'
+    ,'Input 27: Diffusion terms are 0. Use {factorize=TRUE} and {factor.type="Hawkes"}.\n'
     ,'Input 28: Diffusion terms are 0. Density approximant cab perform poorly without \nfactorization. Try {factorize=TRUE}.\n'
 
   )
@@ -121,7 +121,7 @@ JGQD.density=function(Xs=4,Xt=seq(5,8,1/10),s=0,t=5,delt=1/100,Jdist='Normal',Jt
   if(t<s){warntrue[22] =TRUE}#{stop(paste0(b1,warn[22],b2))}
   if((Jtype!='Add')&&(Jtype!='Mult'))                          {warntrue[24] =TRUE}
   if((factorize!=TRUE)&&(factorize!=FALSE))                    {warntrue[25] =TRUE}
-  if((factor.type!='Diffusion')&&(factor.type!='Hawke'))       {warntrue[26] =TRUE}
+  if((factor.type!='Diffusion')&&(factor.type!='Hawkes'))       {warntrue[26] =TRUE}
   if(sum(JDindex)==0){stop(paste0(b1,warn[23],b2))}
 
   # Print output:
@@ -162,7 +162,7 @@ JGQD.density=function(Xs=4,Xt=seq(5,8,1/10),s=0,t=5,delt=1/100,Jdist='Normal',Jt
  {},
  {},
  {
-   if((factorize)&&(factor.type!='Hawke')){stop(paste0(b1,warn[27],b2))}
+   if((factorize)&&(factor.type!='Hawkes')){stop(paste0(b1,warn[27],b2))}
    if(!factorize){warning(paste0(b1,warn[28],b2))}
  })
 
@@ -732,7 +732,7 @@ a..*b..^3*x[7]*mm4+420*a..^2*b..^2*x[6]*mm4+280*a..^3*b..*x[5]*mm4+70*a..^4*x[4]
             if(p0[i]>0.01){DD[,i]=dens1(Xt,MMM[1:4,i])*p0[i]+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
            }
          }
-         if(factor.type=='Hawke')
+         if(factor.type=='Hawkes')
          {
             if(p0[i]>0.01){DD[,i]=p0[i]/diff(Xt)[1]*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
          }
@@ -798,7 +798,7 @@ a..*b..^3*x[7]*mm4+420*a..^2*b..^2*x[6]*mm4+280*a..^3*b..*x[5]*mm4+70*a..^4*x[4]
             if(p0[i]>0.01){DD[,i]=dens1(Xt,MMM[1:4,i])*p0[i]+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
            }
          }
-         if(factor.type=='Hawke')
+         if(factor.type=='Hawkes')
          {
             if(p0[i]>0.01){DD[,i]=p0[i]/diff(Xt)[1]*(abs(Xt-MM[1+TR.order,i])<0.99*diff(Xt)[1])+dens2(Xt,VVV[1:4,i])*p1[i]}else{DD[,i]=dens1(Xt,MM[1:4,i])}
          }
@@ -868,7 +868,7 @@ a..*b..^3*x[7]*mm4+420*a..^2*b..^2*x[6]*mm4+280*a..^3*b..*x[5]*mm4+70*a..^4*x[4]
 
      }
     }
-    if(factor.type=='Hawke')
+    if(factor.type=='Hawkes')
     {
      if(DTR.order==4)
     {
@@ -1053,7 +1053,7 @@ a..*b..^3*x[7]*mm4+420*a..^2*b..^2*x[6]*mm4+280*a..^3*b..*x[5]*mm4+70*a..^4*x[4]
 
      }
     }
-        if(factor.type=='Hawke')
+        if(factor.type=='Hawkes')
     {
      if(DTR.order==4)
     {
@@ -1230,7 +1230,7 @@ a..*b..^3*x[7]*mm4+420*a..^2*b..^2*x[6]*mm4+280*a..^3*b..*x[5]*mm4+70*a..^4*x[4]
 
      }
     }
-        if(factor.type=='Hawke')
+        if(factor.type=='Hawkes')
     {
      if(DTR.order==4)
     {
@@ -1420,7 +1420,7 @@ a..*b..^3*x[7]*mm4+420*a..^2*b..^2*x[6]*mm4+280*a..^3*b..*x[5]*mm4+70*a..^4*x[4]
       }
      }
 
-     if(factor.type=='Hawke')
+     if(factor.type=='Hawkes')
     {
       if(DTR.order==4)
      {

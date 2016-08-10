@@ -130,55 +130,10 @@ See \code{\link{BiJGQD.mcmc}} and \code{\link{JGQD.density}}.
 \donttest{
 #===============================================================================
 
-# Generate the transitional density of a non-linear bivariate jump diffusion
- # with a time-inhomogeneous jump distribution.
- JGQD.remove()
+ # For detailed notes and examples on how to use the BiJGQD.density() function, see
+ # the following vignette:
 
- a00 = function(t){0.5*5}
- a10 = function(t){-0.5}
- a01 = function(t){-0.1}
- c10 = function(t){0.4^2}
-
- b00 = function(t){0.4*6}
- b01 = function(t){-0.4}
- b10 = function(t){-0.1}
- f01 = function(t){0.3^2}
-
- Lam00= function(t){1}
-
- Jmu1=function(t){0.75*(1+sin(2*pi*t))}
- Jmu2=function(t){0.75*(1+sin(2*pi*t))}
- Jsig11=function(t){0.75^2*(1+0.8*sin(2*pi*t))^2}
- Jsig22=function(t){0.75^2*(1+0.8*sin(2*pi*t))^2}
-
- xx=seq(3,11,1/10)
- yy=seq(3,11,1/10)
- res= BiJGQD.density(7,7,xx,yy,0,1,1/100,Dtype='Saddlepoint')
-
- # Plot the transitional denisty at various points in time:
- library(colorspace)
- colpal=function(n){rev(sequential_hcl(n,power=0.8,l=c(40,100)))}
- pts=c(0.13,0.28,0.38,0.51,0.63,0.75)
- for(i in 1:length(pts))
- {
-  filled.contour(res$Xt,res$Yt,res$density[,,pts[i]*100],
-   main=paste0('Transition Density \n (t = ',round(pts[i],2),')'),
-   color.palette=colpal, nlevels=41,xlab=expression(X[t]),
-   ylab=expression(Y[t]),plot.axes=
-   {
-    axis(1);axis(2)
-    yy=contourLines(res$Xt,res$Yt,res$density[,,pts[i]*100],
-                    levels=seq(0.01,0.1,length=10))
-    if(length(yy)>0)
-    {
-      for(j in 1:length(yy))
-      {
-       lines(yy[[j]])
-      }
-    }
-   })
- }
-
+ RShowDoc('Part_3_Bivariate_Diffusions',type='html','DiffusionRjgqd')
 
 #===============================================================================
 }

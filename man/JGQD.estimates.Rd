@@ -8,7 +8,7 @@ Extract Parmaeter Estimates from \code{.mle()} or \code{.mcmc()} Objects.
 }
 \usage{
 JGQD.estimates(x, thin = 100, burns, CI = c(0.05, 0.95), corrmat =
-                 FALSE, acf.plot = TRUE)
+                 FALSE, acf.plot = TRUE, palette='mono')
 }
 
 \arguments{
@@ -30,7 +30,7 @@ If TRUE, an estimated correlation matrix is returned in addition to the estimate
   \item{acf.plot}{
 If TRUE, an acf plot is drawn for each element of the parameter chain.
 }
-
+ \item{palette}{Colour palette for drawing trace plots. Default \code{palette = 'mono'}, otherwise a qualitative palette will be used.}
 }
 
 \value{

@@ -59,7 +59,8 @@ and
 BiJGQD.mcmc(X, time, mesh = 10, theta, sds, updates = 10,
             burns = min(round(updates/2),25000), exclude = NULL, plot.chain = TRUE,
             RK.order = 4, wrt = FALSE, Tag = NA, Dtype = "Saddlepoint",
-            Jdist = "MVNormal", Jtype ='Add', adapt = 0, print.output = TRUE)
+            Jdist = "MVNormal", Jtype ='Add', adapt = 0, print.output = TRUE,
+            decode = TRUE, palette = 'mono')
 }
 \arguments{
   \item{X}{A matrix containing rows of data points to be modelled. Although observations are allowed to be non-equidistant, observations in both dimensions are assumed to occur at the same time epochs (i.e. \code{time} gives the time signature for both dimensions).
@@ -86,7 +87,7 @@ BiJGQD.mcmc(X, time, mesh = 10, theta, sds, updates = 10,
 \item{wrt}{If \code{TRUE} a .cpp file will be written to the current directory. For bug report diagnostics.}
 \item{print.output}{If \code{TRUE} information about the model and algorithm is printed to the console. }
 \item{decode}{Should the algorithm estimate jump detection probabilities? Default value is \code{TRUE}. }
-\item{plot.chain}{Colour palette for drawing trace plots. Default \code{palette = 'mono'}, otherwise a qualitative palette will be used.}
+\item{palette}{Colour palette for drawing trace plots. Default \code{palette = 'mono'}, otherwise a qualitative palette will be used.}
 }
 \value{
   \item{par.matrix }{A matrix containing the MCMC chain on \code{theta}. }

@@ -1027,7 +1027,7 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
     {
       for(i in 1:TR.order)
       {
-        jump.body[i] = paste0('+a.col(',i-1,')',c('*','%')[jump.inhomogeneous[1]],'(',body(Lam0)[2],')',c('*','%')[mom.inhomogeneous],'(',jump.body[i],')')
+        jump.body[i] = paste0('+a.col(',i-1,')',c('*','%')[jump.inhomogeneous[1]],'(',body('Lam0')[2],')',c('*','%')[mom.inhomogeneous],'(',jump.body[i],')')
       }
     }
     if(func.list2[8]==1)
@@ -1036,9 +1036,9 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
       {
         if(i !=4)
         {
-          jump.body2[i] = paste0('+a.col(',i,')',c('*','%')[jump.inhomogeneous[2]],'(',body(Lam1)[2],')',c('*','%')[mom.inhomogeneous],'(',jump.body2[i],')')
+          jump.body2[i] = paste0('+a.col(',i,')',c('*','%')[jump.inhomogeneous[2]],'(',body('Lam1')[2],')',c('*','%')[mom.inhomogeneous],'(',jump.body2[i],')')
         }
-        if(i == 4){jump.body2[i] = paste0('+(-(-5*a.col(3)%a.col(0)-10*a.col(2)%a.col(1)+20*a.col(2)%pow(a.col(0),2)+30*pow(a.col(1),2)%a.col(0)-60*a.col(1)%pow(a.col(0),3)+24*pow(a.col(0),5)))',c('*','%')[jump.inhomogeneous[2]],'(',body(Lam1)[2],')',c('*','%')[mom.inhomogeneous],'(',jump.body2[i],')')
+        if(i == 4){jump.body2[i] = paste0('+(-(-5*a.col(3)%a.col(0)-10*a.col(2)%a.col(1)+20*a.col(2)%pow(a.col(0),2)+30*pow(a.col(1),2)%a.col(0)-60*a.col(1)%pow(a.col(0),3)+24*pow(a.col(0),5)))',c('*','%')[jump.inhomogeneous[2]],'(',body('Lam1')[2],')',c('*','%')[mom.inhomogeneous],'(',jump.body2[i],')')
         }
       }
     }
@@ -1091,14 +1091,14 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
     {
       for(i in 1:TR.order)
       {
-        jump.body[i] = paste0('+(',body(Lam0)[2],')',c('*','%')[jump.inhomogeneous[1]],'(',jump.body[i],')')
+        jump.body[i] = paste0('+(',body('Lam0')[2],')',c('*','%')[jump.inhomogeneous[1]],'(',jump.body[i],')')
       }
     }
     if(func.list2[8]==1)
     {
       for(i in 1:TR.order)
       {
-        jump.body2[i] = paste0('+(',body(Lam1)[2],')',c('*','%')[jump.inhomogeneous[2]],'(',jump.body2[i],')')
+        jump.body2[i] = paste0('+(',body('Lam1')[2],')',c('*','%')[jump.inhomogeneous[2]],'(',jump.body2[i],')')
       }
     }
   }
@@ -1111,13 +1111,13 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
   {
     for(i in 1:TR.order)
     {
-      prem =paste0(prem,c('double','vec')[jump.inhomogeneous[5]],' mm',i,'=',factorial(i),'*pow(',body(Jlam)[2],',',i,');\n    ')
+      prem =paste0(prem,c('double','vec')[jump.inhomogeneous[5]],' mm',i,'=',factorial(i),'*pow(',body('Jlam')[2],',',i,');\n    ')
     }
   }
   if(Jdist=='Normal')
   {
-    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[3]],' mu  =',body(Jmu)[2],';\n    ')
-    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[4]],' sig =',body(Jsig)[2],';\n    ')
+    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[3]],' mu  =',body('Jmu')[2],';\n    ')
+    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[4]],' sig =',body('Jsig')[2],';\n    ')
 
     norm.prem =
       c(' mm1 = mu;'
@@ -1151,8 +1151,8 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
   if(Jdist=='Gamma')
   {
     ################################################################################################## Might be an error here  (%'s)
-    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[6]],' alphaa  =',body(Jalpha)[2],';\n    ')
-    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[7]],' betaa   =',body(Jbeta)[2],';\n    ')
+    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[6]],' alphaa  =',body('Jalpha')[2],';\n    ')
+    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[7]],' betaa   =',body('Jbeta')[2],';\n    ')
     gam.prem =
       c(' mm1 = alphaa*betaa;'
         ,' mm2 = alphaa*(alphaa+1)*pow(betaa,2);'
@@ -1184,8 +1184,8 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
   if(Jdist=='Laplace')
   {
     ################################################################################################## Might be an error here (%'s)
-    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[8]],' aa  =',body(Ja)[2],';\n    ')
-    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[9]],' bb   =',body(Jb)[2],';\n    ')
+    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[8]],' aa  =',body('Ja')[2],';\n    ')
+    prem =paste0(prem,c('double','vec')[jump.inhomogeneous[9]],' bb   =',body('Jb')[2],';\n    ')
     lap.prem =
       c(' mm1 = 0.5*(+2*aa*bb)                                                     ;'
         ,' mm2 = 0.5*(+2*pow(aa,2)+4*pow(bb,2))                                     ;'
@@ -1534,7 +1534,7 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
     }else{
      cols=rainbow_hcl(nper, start = 10, end = 275,c=100,l=70)
     }
-    
+
     ylabs=paste0('theta[',1:nper,']')
     for(i in 1:nper)
     {

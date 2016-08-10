@@ -6,9 +6,9 @@
 * There were no ERRORs or WARNINGs.
 * There was one NOTE:
 ```
-  installed size is  5.5Mb
+  installed size is  7.3Mb
   sub-directories of 1Mb or more:
-    doc    3.8Mb
+    doc    5.6Mb
     libs   1.3Mb
 ```
 * PDF version of manual was OK.

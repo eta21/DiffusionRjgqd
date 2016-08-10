@@ -158,100 +158,11 @@ See \code{\link{JGQD.mcmc}} and \code{\link{BiJGQD.density}}.
 \donttest{
 
 #===============================================================================
-# Compare transition densities and mean trajectories of a non-linear jump
-# diffusion for various jump distributions.
-#-------------------------------------------------------------------------------
-rm(list=ls(all=TRUE))
-library(DiffusionRjgqd)
 
-JGQD.remove()
-# Define the jump diffusion using the DiffusionRjgqd syntax:
-G1=function(t){0.2*5+0.1*sin(2*pi*t)}
-G2=function(t){-0.2}
-Q1=function(t){0.2}
+ # For detailed notes and examples on how to use the JGQD.density() function, see
+ # the following vignette:
 
-# State dependent intensity:
-Lam0 = function(t){1}
-Lam1    = function(t){0.1}
-
-# Normally distributed jumps: N(1,0.2)
-Jmu    = function(t){1.0}
-Jsig   = function(t){0.2}
-# Normal distribution is the default:
-res_1  = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,factorize=FALSE)
-
-
-# Gamma distributed jumps: Gamma(0.5,0.5)
-Jalpha = function(t){0.5}
-Jbeta  = function(t){0.5}
-# Jdist sets the jump distribution type:
-res_2  = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Gamma',factorize=FALSE)
-
-# Laplace jump parameters: Laplace(0.5*(sin(pi*t)),0.2)
-Ja    = function(t){0.5*sin(pi*t)}
-Jb    = function(t){0.2}
-res_3 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
-
-par(mfrow=c(2,2))
-persp(x=res_1$Xt,y=res_1$time,z=pmin(res_1$density,0.8),col=3,xlab='State (X_t)',ylab='Time (t)',
-          zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145,
-          main ='Normally distributed jumps',zlim=c(0,0.8))
-
-persp(x=res_2$Xt,y=res_2$time,z=pmin(res_2$density,0.8),col=4,xlab='State (X_t)',ylab='Time (t)',
-          zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145,
-          main ='Gamma distributed jumps',zlim=c(0,0.8))
-
-persp(x=res_3$Xt,y=res_3$time,z=pmin(res_3$density,0.8),col=5,xlab='State (X_t)',ylab='Time (t)',
-          zlab='Density f(X_t|X_s)',border=NA,shade=0.5,theta=145,
-          main ='Laplace distributed jumps',zlim=c(0,0.8))
-plot(res_1$moments[1,]~res_1$time,type='n',main='Mean trajectories',ylab='E[X_t]',xlab='Time (t)')
-lines(res_1$moments[1,]~res_1$time,col=1+2)
-lines(res_2$moments[1,]~res_2$time,col=1+3)
-lines(res_3$moments[1,]~res_3$time,col=1+4)
-
-#===============================================================================
-# Compare mean trajectories and zero-jump probabilities of a non-linear jump
-# diffusion for various jump intensities.
-#-------------------------------------------------------------------------------
-JGQD.remove()
-# Define the jump diffusion using the DiffusionRjgqd syntax:
-G1=function(t){0.2*6}
-G2=function(t){-0.2}
-Q0=function(t){1.2}
-
-# Laplace jump parameters: Laplace(05,0.2)
-Ja    = function(t){0.5}
-Jb    = function(t){0.2}
-
-
-# Constant intensity:
-Lam0 = function(t){1}
-res_1 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
-
-# State dependent intensity:
-Lam0 = function(t){0}
-Lam1    = function(t){0.1}
-res_2 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
-
-# State dependent, inhomogeneous intensity:
-Lam0 = function(t){0}
-Lam1    = function(t){0.1*(1+sin(5*pi*t))}
-res_3 = JGQD.density(4,seq(2,10,1/10),0,2.5,1/100,Jdist = 'Laplace',factorize=FALSE)
-
-
-par(mfrow=c(1,2))
-
-plot(res_1$moments[1,]~res_1$time,type='n',main='Mean trajectories',ylab='E[X_t]',xlab='Time (t)')
-lines(res_1$moments[1,]~res_1$time,col=2)
-lines(res_2$moments[1,]~res_2$time,col=3)
-lines(res_3$moments[1,]~res_3$time,col=4)
-
-plot(res_1$zero_jump_prob~res_1$time,type='n',main=expression(P(N_t ==0)),ylab='Probability',
-     xlab='Time (t)',ylim=c(0,1))
-lines(res_1$zero_jump_prob~res_1$time,col=2)
-lines(res_2$zero_jump_prob~res_2$time,col=3)
-lines(res_3$zero_jump_prob~res_3$time,col=4)
-
+ RShowDoc('Part_2_Transition_Densities',type='html','DiffusionRjgqd')
 
 #===============================================================================
 }

@@ -58,7 +58,8 @@ or
 JGQD.mcmc(X, time, mesh = 10, theta, sds, updates = 1000,
           burns = min(round(updates/2), 25000), Jtype = "Add", Jdist = "Normal",
           Dtype = "Saddlepoint", RK.order = 4, exclude = NULL, plot.chain = TRUE,
-          wrt = FALSE, Tag = NA, factorize = TRUE, print.output = TRUE)
+          wrt = FALSE, Tag = NA, factorize = TRUE, print.output = TRUE,
+          decode = TRUE, palette = 'mono')
 }
 
 \arguments{
@@ -96,7 +97,7 @@ The number of updates to burn. That is, the first \code{burns} values are omitte
 \item{factorize}{Should factorization be used (default = TRUE).}
 \item{print.output}{If \code{TRUE}, model information is printed to the console.}
 \item{decode}{Should the algorithm estimate jump detection probabilities? Default value is \code{TRUE}. }
-\item{plot.chain}{Colour palette for drawing trace plots. Default \code{palette = 'mono'}, otherwise a qualitative palette will be used.}
+\item{palette}{Colour palette for drawing trace plots. Default \code{palette = 'mono'}, otherwise a qualitative palette will be used.}
 }
 \details{
 
