@@ -1373,6 +1373,9 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
   par.matrix[,1]=theta
   prop.matrix =par.matrix
   rs=solver(X[-nnn],X[-1],c(0,theta),mesh,delt,nnn-1,T.seq[-nnn],P,alpha,lower,upper,TR.order)
+  rs$like[is.nan(rs$like)]<-mean(rs$like,na.rm=TRUE)
+  rs$like2[is.nan(rs$like2)]<-mean(rs$like2,na.rm=TRUE)
+  rs$like3[is.nan(rs$like3)]<-mean(rs$like3,na.rm=TRUE)
 
   lold=sum(rs$like)
   if(is.na(lold))
@@ -1433,6 +1436,9 @@ JGQD.mcmc = function(X,time,mesh=10,theta,sds,updates=1000,burns=min(round(updat
         theta=theta+rnorm(length(theta),sd=sds)
         prop.matrix[,i] = theta
         rs=solver(X[-nnn],X[-1],c(0,theta),mesh,delt,nnn-1,T.seq[-nnn],P,alpha,lower,upper,TR.order)
+        rs$like[is.nan(rs$like)]<-mean(rs$like,na.rm=TRUE)
+        rs$like2[is.nan(rs$like2)]<-mean(rs$like2,na.rm=TRUE)
+        rs$like3[is.nan(rs$like3)]<-mean(rs$like3,na.rm=TRUE)
         lnew=sum(rs$like)
         stps[i]=(rs$steps)
         rat=min(exp(lnew-lold)*pp(theta)/pp(theta.temp),1)
